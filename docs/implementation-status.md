@@ -104,6 +104,16 @@ Evidence (would-be): `scripts/lib/load-oracle.mjs` manifest loader; `npm run dev
 - [x] tests/unit/tokens.test.ts + ticket.test.ts (27 tests total green); tsc + eslint green
 - [~] run on Oracle — BLOCKED (OracleServiceXE stopped, no Docker)
 
-## Phases 9-11: React UI, reporting, ops
+## Phase 9: React passenger/ops UI (IMPLEMENTED, UNVERIFIED)
+
+- [x] frontend/src/lib/api.ts — typed fetch client (token storage, ApiError, all endpoints)
+- [x] frontend/src/auth/AuthContext.tsx — session bootstrap, login/logout, role checks
+- [x] frontend/src/components/{Layout,ui}.tsx — nav shell + shared Card/Field/Input/Select/Button/Badge/Note
+- [x] pages: LoginPage, SearchPage (station search + results), BookingPage (availability -> book -> pay), PnrPage (lookup + cancel), TtePage (passenger list + boarding), AlertsPage (IoT alerts + simulate reading + ack)
+- [x] App.tsx routes (BrowserRouter + AuthProvider); VITE_API_BASE_URL
+- [x] frontend build (tsc -b + vite build) green; oxlint warnings only; vitest 2 tests green
+- [~] run against live Oracle/Redis/Mongo — BLOCKED
+
+## Phases 10-11: Reporting, ops
 
 - pending

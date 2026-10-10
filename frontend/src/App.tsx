@@ -1,8 +1,31 @@
+import { BrowserRouter, Route, Routes } from 'react-router-dom'
+import { AuthProvider } from './auth/AuthContext'
+import { Layout } from './components/Layout'
+import { Note } from './components/ui'
+import { LoginPage } from './pages/LoginPage'
+import { SearchPage } from './pages/SearchPage'
+import { BookingPage } from './pages/BookingPage'
+import { PnrPage } from './pages/PnrPage'
+import { TtePage } from './pages/TtePage'
+import { AlertsPage } from './pages/AlertsPage'
+
 export default function App() {
   return (
-    <main style={{ padding: '2rem', fontFamily: 'system-ui, sans-serif' }}>
-      <h1>RailNexus</h1>
-      <p>Frontend scaffold ready (Phase 0). The passenger experience is built in Phase 9.</p>
-    </main>
+    <BrowserRouter>
+      <AuthProvider>
+        <Routes>
+          <Route element={<Layout />}>
+            <Route path="/" element={<SearchPage />} />
+            <Route path="/login" element={<LoginPage />} />
+            <Route path="/search" element={<SearchPage />} />
+            <Route path="/book" element={<BookingPage />} />
+            <Route path="/pnr" element={<PnrPage />} />
+            <Route path="/tte" element={<TtePage />} />
+            <Route path="/alerts" element={<AlertsPage />} />
+            <Route path="*" element={<Note kind="error">Page not found.</Note>} />
+          </Route>
+        </Routes>
+      </AuthProvider>
+    </BrowserRouter>
   )
 }

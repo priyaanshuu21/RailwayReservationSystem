@@ -22,8 +22,8 @@
     "5": { "status": "implemented_unverified", "startedAt": "2026-10-10T10:11:00Z", "completedAt": "2026-10-10T10:40:00Z", "commit": "f5b675e", "note": "JSON columns + fare rule JSON + pkg_json_rules (REGEXP parser), pkg_outbox + pkg_rules integrated into booking, backend outbox relay (Redis+Mongo); Oracle/Redis/Mongo runtime blocked in this env." },
     "6": { "status": "implemented_unverified", "startedAt": "2026-10-10T10:45:00Z", "completedAt": "2026-10-10T11:05:00Z", "commit": "79c0af5", "note": "Redis cache wrapper + keys, shared Oracle pool/query + probe, pure fare domain, metadata API (zones/stations/trains/routes/fares) with Redis caching, /ready dependency probes; 12 jest tests green." },
     "7": { "status": "implemented_unverified", "startedAt": "2026-10-10T11:10:00Z", "completedAt": "2026-10-10T11:35:00Z", "commit": "b59102c", "note": "IoT family DDL + pkg_iot + zone seed, Mongo time-series init, backend domain/iot + iotService + /api/iot routes; 18 jest tests green." },
-    "8": { "status": "implemented_unverified", "startedAt": "2026-10-10T11:40:00Z", "completedAt": "2026-10-10T12:15:00Z", "commit": "pending", "note": "Reservation & auth API: JWT auth (bcrypt + role resolution), search/availability/book/pay/PNR/cancel, TTE console endpoints, zone-scoped PL/SQL binds; 27 jest tests green; DB runtime blocked." },
-    "9": { "status": "pending" },
+    "8": { "status": "implemented_unverified", "startedAt": "2026-10-10T11:40:00Z", "completedAt": "2026-10-10T12:15:00Z", "commit": "0a566d5", "note": "Reservation & auth API: JWT auth (bcrypt + role resolution), search/availability/book/pay/PNR/cancel, TTE console endpoints, zone-scoped PL/SQL binds; 27 jest tests green; DB runtime blocked." },
+    "9": { "status": "implemented_unverified", "startedAt": "2026-10-10T12:20:00Z", "completedAt": "2026-10-10T12:55:00Z", "commit": "pending", "note": "React SPA: typed API client, auth context, layout, search/booking/payment/PNR/TTE/alerts pages; frontend build+lint+vitest green." },
     "10": { "status": "pending" },
     "11": { "status": "pending" }
   },
@@ -33,5 +33,5 @@
     "OracleServiceXE is stopped and starting it requires administrator elevation (current shell is not elevated). ALL Oracle runtime verification (Phase 1 DDL execution, Phase 2+ PL/SQL, integration tests) is blocked until the user starts the service or provisions Oracle via Docker.",
     "Redis and MongoDB not installed; will be obtained via portable binaries or npm-managed memory servers for local tests."
   ],
-  "nextAction": "Commit + push Phase 8, then implement Phase 9 (React UI): API client, auth context, availability search, booking + payment flow, PNR view, TTE console, IoT/alerts dashboard; wire to /api endpoints; verify frontend typecheck + build."
+  "nextAction": "Commit + push Phase 9, then implement Phase 10 (reporting & analytics): reporting schema/materialized views, OLAP aggregations (revenue, occupancy, zone rollups), reporting API + charts endpoint, Mongo aggregation; then Phase 11 ops/docs/docker/README/ADBMS concept map."
 }
