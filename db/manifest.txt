@@ -14,4 +14,9 @@ zone_north/schema.sql|RAILNEXUS_NORTH
 zone_west/schema.sql|RAILNEXUS_WEST
 zone_south/schema.sql|RAILNEXUS_SOUTH
 
+# Phase 2 - distributed architecture (DB links, federated views, cross-zone booking)
+distributed/db_links.sql|RAILNEXUS
+distributed/distributed_views.sql|RAILNEXUS
+distributed/book_cross_zone_ticket.sql|RAILNEXUS
+
 # PL/SQL application packages (phases 3-5)

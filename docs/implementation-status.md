@@ -29,9 +29,15 @@ Legend: `[x] done` | `[~] implemented, runtime verification blocked (no Oracle s
 
 Evidence (would-be): `scripts/lib/load-oracle.mjs` manifest loader; `npm run dev-test` smoke tests. Not runnable here.
 
-## Phase 2: Distributed architecture (PENDING)
+## Phase 2: Distributed architecture (IMPLEMENTED, UNVERIFIED)
 
-- [ ] zone DB links, cross-zone distributed view/table, cross-zone booking PL/SQL, zone-router backend service
+- [x] docs/distributed-architecture.md — layout, fragmenting rule, 2PC seam
+- [x] db/distributed/db_links.sql — ZONE_* DB links (shared + between zones), `&DB_SERVICE` override
+- [x] db/distributed/distributed_views.sql — vw_all_zone_schedules, vw_zone_inventory, vw_zone_coaches, vw_train_catalog
+- [x] db/distributed/book_cross_zone_ticket.sql — pkg_cross_zone TCP/IP-style cross-zone booking + demo
+- [x] backend/src/db/zoneRouter.ts + db/index.ts — station/zone -> owning schema, lazy per-zone pools
+- [x] backend typecheck + lint + jest green; oracledb.minimal.d.ts added (oracledb 6.x ships no types)
+- [~] run on Oracle — BLOCKED (same blocker as Phase 1)
 
 ## Phases 3-11: PL/SQL, object-relational, JSON/Semi-struct, IoT/app, React UI, reporting, ops
 
