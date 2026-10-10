@@ -259,18 +259,19 @@ CREATE TABLE waitlisted_ticket (
 );
 
 -- ---------------------------------------------------------------------------
--- WAITLIST_QUEUE: strict FIFO per schedule. Position 1..n.
+-- WAITLIST_QUEUE: strict FIFO per schedule AND coach class. Position 1..n.
 -- Defined after TICKET so the queue rows can point at tickets via a real FK.
 -- ---------------------------------------------------------------------------
 CREATE TABLE waitlist_queue (
   queue_id      NUMBER(14) NOT NULL,
   schedule_id   NUMBER(12) NOT NULL,
+  coach_class   VARCHAR2(3) NOT NULL,
   ticket_id     NUMBER(14) NOT NULL,
   position      NUMBER(6)  NOT NULL,
   queue_type    CHAR(2)    NOT NULL CHECK (queue_type IN ('RAC','WL')),
   enqueued_at   TIMESTAMP  DEFAULT SYSTIMESTAMP NOT NULL,
   CONSTRAINT pk_waitlist PRIMARY KEY (queue_id),
-  CONSTRAINT uq_waitlist_pos UNIQUE (schedule_id, position), -- FIFO ordering
+  CONSTRAINT uq_waitlist_pos UNIQUE (schedule_id, coach_class, position), -- FIFO per class
   CONSTRAINT fk_wl_sched FOREIGN KEY (schedule_id) REFERENCES train_schedule(schedule_id),
   CONSTRAINT fk_wl_ticket FOREIGN KEY (ticket_id) REFERENCES ticket(ticket_id)
 );

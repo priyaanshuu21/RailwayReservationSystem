@@ -19,4 +19,16 @@ distributed/db_links.sql|RAILNEXUS
 distributed/distributed_views.sql|RAILNEXUS
 distributed/book_cross_zone_ticket.sql|RAILNEXUS
 
-# PL/SQL application packages (phases 3-5)
+# Phase 3 - PL/SQL application packages (shared schema + every zone schema)
+plsql/pkg_fare.sql|RAILNEXUS
+plsql/pkg_fare.sql|ZONEALL
+plsql/pkg_booking.sql|RAILNEXUS
+plsql/pkg_booking.sql|ZONEALL
+plsql/pkg_payment.sql|RAILNEXUS
+plsql/pkg_payment.sql|ZONEALL
+plsql/pkg_tte.sql|RAILNEXUS
+plsql/pkg_tte.sql|ZONEALL
+plsql/outbox_audit_trigger.sql|RAILNEXUS
+plsql/outbox_audit_trigger.sql|ZONEALL
+
+# Phase 4-5 PL/SQL (object-relational traversal, JSON rules, outbox relay)

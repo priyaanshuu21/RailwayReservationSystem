@@ -16,7 +16,8 @@
   "phases": {
     "0": { "status": "verified", "startedAt": "2026-10-10T08:00:00Z", "completedAt": "2026-10-10T08:20:00Z", "commit": "ee5c46d" },
     "1": { "status": "implemented_unverified", "startedAt": "2026-10-10T08:21:00Z", "completedAt": "2026-10-10T09:05:00Z", "commit": "23369a1", "note": "DDL/seed written and reviewed; Oracle runtime verification blocked (OracleServiceXE stopped, no Docker)." },
-    "2": { "status": "implemented_unverified", "startedAt": "2026-10-10T09:06:00Z", "completedAt": "2026-10-10T09:30:00Z", "commit": "pending", "note": "DB links, federated views, pkg_cross_zone, backend zoneRouter; backend lint/typecheck/test green; Oracle execution blocked." },
+    "2": { "status": "implemented_unverified", "startedAt": "2026-10-10T09:06:00Z", "completedAt": "2026-10-10T09:30:00Z", "commit": "7d8839b", "note": "DB links, federated views, pkg_cross_zone, backend zoneRouter; backend lint/typecheck/test green; Oracle execution blocked." },
+    "3": { "status": "implemented_unverified", "startedAt": "2026-10-10T09:31:00Z", "completedAt": "2026-10-10T09:50:00Z", "commit": "pending", "note": "pkg_fare/pkg_booking/pkg_payment/pkg_tte/outbox trigger; waitlist_queue scoped per class; Oracle execution blocked." },
     "3": { "status": "pending" },
     "4": { "status": "pending" },
     "5": { "status": "pending" },
@@ -33,5 +34,5 @@
     "OracleServiceXE is stopped and starting it requires administrator elevation (current shell is not elevated). ALL Oracle runtime verification (Phase 1 DDL execution, Phase 2+ PL/SQL, integration tests) is blocked until the user starts the service or provisions Oracle via Docker.",
     "Redis and MongoDB not installed; will be obtained via portable binaries or npm-managed memory servers for local tests."
   ],
-  "nextAction": "Commit + push Phase 2, then implement Phase 3 (comprehensive PL/SQL packages): pkg_booking (availability, book, cancel, payment capture, refund), pkg_fare (rate engine incl. superfast surcharge), pkg_tte (boarding, check-in), pkg_outbox_relay; wire health + metadata endpoints; mark DB-verification as blocked."
+  "nextAction": "Commit + push Phase 3, then implement Phase 4 (object-relational): TRAIN_JOURNEY object type with segments nested table, ROUTE_JOURNEY object table + view exposing TRAIN-ROUTE-SEGMENT paths, PL/SQL traversal package (pkg_journey) that navigates the OR path; mark DB-verification as blocked."
 }

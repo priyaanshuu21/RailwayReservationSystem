@@ -39,6 +39,17 @@ Evidence (would-be): `scripts/lib/load-oracle.mjs` manifest loader; `npm run dev
 - [x] backend typecheck + lint + jest green; oracledb.minimal.d.ts added (oracledb 6.x ships no types)
 - [~] run on Oracle — BLOCKED (same blocker as Phase 1)
 
-## Phases 3-11: PL/SQL, object-relational, JSON/Semi-struct, IoT/app, React UI, reporting, ops
+## Phase 3: PL/SQL application packages (IMPLEMENTED, UNVERIFIED)
+
+- [x] db/plsql/pkg_fare.sql — rate engine (base band + superfast surcharge, effective_from versioning), compute_fare + fare_breakdown
+- [x] db/plsql/pkg_booking.sql — availability / book_ticket (CONFIRMED -> RAC -> WL FIFO) / cancel_ticket (frees seat, promotes first RAC); idempotent by request_id; SKIP LOCKED seat grab
+- [x] db/plsql/pkg_payment.sql — record_payment (UPI/CARD/WALLET specialisation), capture_payment, request_refund; idempotent
+- [x] db/plsql/pkg_tte.sql — list_schedule_tickets, board_ticket, on_board_count
+- [x] db/plsql/outbox_audit_trigger.sql — booking_audit AFTER INSERT -> domain_outbox (same txn; 11g-safe payload)
+- [x] db/zone_common/booking_family.sql: waitlist_queue is now per (schedule, class) FIFO (added coach_class)
+- [x] manifest updated (pkg_fare/book/payment/tte/trigger -> RAILNEXUS + ZONEALL)
+- [~] run on Oracle — BLOCKED (same blocker as Phase 1)
+
+## Phases 4-11: object-relational, JSON/Semi-struct, IoT/app, React UI, reporting, ops
 
 - pending
