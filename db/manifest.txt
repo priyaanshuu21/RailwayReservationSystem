@@ -1,0 +1,17 @@
+# RailNexus schema + seed + PL/SQL application manifest
+# Format: <path relative to db/>|<schema target>
+#   $SYS   -> administrative connection (used by scripts),
+#   RAILNEXUS -> shared application schema,
+#   RAILNEXUS_<ZONE> -> that specific zone user,
+#   ZONEALL -> run once for every zone user.
+# Files run in listed order. Scripts are re-runnable on a dedicated dev schema.
+
+shared_ddl/00_bootstrap.sql|$SYS
+shared_ddl/01_core_schema.sql|RAILNEXUS
+shared_ddl/02_seed_data.sql|RAILNEXUS
+
+zone_north/schema.sql|RAILNEXUS_NORTH
+zone_west/schema.sql|RAILNEXUS_WEST
+zone_south/schema.sql|RAILNEXUS_SOUTH
+
+# PL/SQL application packages (phases 3-5)

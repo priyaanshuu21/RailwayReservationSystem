@@ -23,7 +23,7 @@ services:
     image: gvenzl/oracle-free:23-slim
     container_name: railnexus-oracle
     environment:
-      ORACLE_PASSWORD: ${ORACLE_PASSWORD:-railnexus_sys}
+      ORACLE_PASSWORD: ${ORACLE_SYS_PASSWORD:-railnexus_sys}
       APP_USER: ${ORACLE_USER:-RAILNEXUS}
       APP_USER_PASSWORD: ${ORACLE_PASSWORD:-railnexus_dev}
     ports:
@@ -31,7 +31,7 @@ services:
     volumes:
       - oracle-data:/opt/oracle/oradata
       - ./db/docker-init:/container-entrypoint-initdb.d:ro
-      - ./db/shared_ddl:/opt/railnexus/ddl:ro
+      - ./db:/opt/railnexus:ro
     healthcheck:
       test: ["CMD", "healthcheck.sh"]
       interval: 30s
