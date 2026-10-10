@@ -92,6 +92,18 @@ Evidence (would-be): `scripts/lib/load-oracle.mjs` manifest loader; `npm run dev
 - [x] backend/src/index.ts — mounts /api/iot; tests/unit/iot.test.ts (18 tests total green)
 - [~] run on Oracle + Mongo — BLOCKED (OracleServiceXE stopped, no Docker)
 
-## Phases 8-11: React UI, reporting, ops
+## Phase 8: Reservation & auth API (IMPLEMENTED, UNVERIFIED)
+
+- [x] backend/src/auth/tokens.ts — JWT sign/verify + claim normalisation (injectable secret)
+- [x] backend/src/auth/service.ts — bcrypt credential check against PERSON + role resolution (passenger/tte/station_master/zone_admin/super_admin)
+- [x] backend/src/api/middleware/auth.ts — requireAuth (Bearer) + requireRole guards
+- [x] backend/src/api/routes/auth.ts — POST /api/auth/login (rate-limited) + GET /api/auth/me
+- [x] backend/src/reservation/reservationService.ts — search, availability, book, pay, PNR lookup across zones, cancel, TTE list/board via pkg_booking/pkg_payment/pkg_tte
+- [x] backend/src/api/routes/reservations.ts — public search/availability; authed book/pay/PNR/cancel; role-gated TTE endpoints
+- [x] backend/src/domain/ticket.ts — coach-class + ticket-status helpers
+- [x] tests/unit/tokens.test.ts + ticket.test.ts (27 tests total green); tsc + eslint green
+- [~] run on Oracle — BLOCKED (OracleServiceXE stopped, no Docker)
+
+## Phases 9-11: React UI, reporting, ops
 
 - pending

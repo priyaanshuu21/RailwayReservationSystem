@@ -6,6 +6,8 @@ import { logger } from './config/logger'
 import { healthRouter } from './api/routes/health'
 import { metadataRouter } from './api/routes/metadata'
 import { iotRouter } from './api/routes/iot'
+import { authRouter } from './api/routes/auth'
+import { reservationsRouter } from './api/routes/reservations'
 import { OutboxRelay } from './outbox/outboxRelay'
 
 export function createApp() {
@@ -23,6 +25,8 @@ export function createApp() {
   app.use('/health', healthRouter)
   app.use('/api/metadata', metadataRouter)
   app.use('/api/iot', iotRouter)
+  app.use('/api/auth', authRouter)
+  app.use('/api', reservationsRouter)
 
   app.get('/api', (_req, res) => {
     res.json({ service: 'railnexus-api', version: '0.1.0', docs: '/api-docs' })
