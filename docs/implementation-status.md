@@ -50,6 +50,13 @@ Evidence (would-be): `scripts/lib/load-oracle.mjs` manifest loader; `npm run dev
 - [x] manifest updated (pkg_fare/book/payment/tte/trigger -> RAILNEXUS + ZONEALL)
 - [~] run on Oracle — BLOCKED (same blocker as Phase 1)
 
-## Phases 4-11: object-relational, JSON/Semi-struct, IoT/app, React UI, reporting, ops
+## Phase 4: Object-relational model (IMPLEMENTED, UNVERIFIED)
+
+- [x] db/or/route_journey_types.sql — segment_t / segment_tab_t / route_journey_t (+ body, total_distance member)
+- [x] db/or/route_journey_tab.sql — object table OF route_journey_t (nested segments storage), train_route_or REF table, population from relational source of truth
+- [x] db/or/pkg_journey.sql — refresh_object_table, print_train_route (REF->DEREF->segments traversal), stops_between / distance_between, list_all_train_segments
+- [~] run on Oracle — BLOCKED (same blocker as Phase 1)
+
+## Phases 5-11: JSON/Semi-struct, NoSQL, React UI, reporting, ops
 
 - pending

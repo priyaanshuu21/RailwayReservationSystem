@@ -31,4 +31,9 @@ plsql/pkg_tte.sql|ZONEALL
 plsql/outbox_audit_trigger.sql|RAILNEXUS
 plsql/outbox_audit_trigger.sql|ZONEALL
 
-# Phase 4-5 PL/SQL (object-relational traversal, JSON rules, outbox relay)
+# Phase 4 - object-relational: journey object model, REF navigation, traversal
+or/route_journey_types.sql|RAILNEXUS
+or/route_journey_tab.sql|RAILNEXUS
+or/pkg_journey.sql|RAILNEXUS
+
+# Phase 5 PL/SQL (JSON rule documents, outbox relay)
