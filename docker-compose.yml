@@ -1,0 +1,121 @@
+# RailNexus development stack (Phase 0 scaffolding).
+#
+# Services and ports
+#   oracle-free  -> 1521   authoritative relational store (seat inventory, bookings, PL/SQL)
+#   redis        -> 6379   cache, distributed lock guard, session store, job queue
+#   mongodb      -> 27017  semi-structured audit trail, notification templates, analytics events
+#   backend      -> 4000   Node.js + Express + TypeScript API (REST + Socket.IO)
+#   frontend     -> 5173   React + TypeScript SPA (Vite)
+#
+# First run:  docker compose up -d --build
+# The Oracle container runs ./db/docker-init/*.sql on first start (empty volume only).
+# Re-running init scripts is safe: every script is written to be re-runnable.
+
+name: railnexus
+
+volumes:
+  oracle-data:
+  mongo-data:
+  redis-data:
+
+services:
+  oracle:
+    image: gvenzl/oracle-free:23-slim
+    container_name: railnexus-oracle
+    environment:
+      ORACLE_PASSWORD: ${ORACLE_PASSWORD:-railnexus_sys}
+      APP_USER: ${ORACLE_USER:-RAILNEXUS}
+      APP_USER_PASSWORD: ${ORACLE_PASSWORD:-railnexus_dev}
+    ports:
+      - "1521:1521"
+    volumes:
+      - oracle-data:/opt/oracle/oradata
+      - ./db/docker-init:/container-entrypoint-initdb.d:ro
+      - ./db/shared_ddl:/opt/railnexus/ddl:ro
+    healthcheck:
+      test: ["CMD", "healthcheck.sh"]
+      interval: 30s
+      timeout: 10s
+      retries: 10
+      start_period: 90s
+    restart: unless-stopped
+
+  redis:
+    image: redis:7-alpine
+    container_name: railnexus-redis
+    command: ["redis-server", "--appendonly", "yes"]
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis-data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+
+  mongo:
+    image: mongo:7
+    container_name: railnexus-mongo
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo-data:/data/db
+    healthcheck:
+      test: ["CMD", "mongosh", "--quiet", "--eval", "db.adminCommand('ping')"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: railnexus-backend
+    environment:
+      API_PORT: 4000
+      ORACLE_HOST: oracle
+      ORACLE_PORT: 1521
+      ORACLE_SERVICE: ${ORACLE_SERVICE:-FREEPDB1}
+      ORACLE_USER: ${ORACLE_USER:-RAILNEXUS}
+      ORACLE_PASSWORD: ${ORACLE_PASSWORD:-railnexus_dev}
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+      MONGO_URL: mongodb://mongo:27017
+      MONGO_DB: railnexus
+      CORS_ORIGINS: http://localhost:5173
+      JWT_ACCESS_SECRET: ${JWT_ACCESS_SECRET:-dev-access-secret-change-me-0123456789abcdef}
+      API_KEY: ${API_KEY:-dev-api-key-change-me}
+    ports:
+      - "4000:4000"
+    depends_on:
+      oracle:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      mongo:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "node", "-e", "fetch('http://localhost:4000/health/live').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+    restart: unless-stopped
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: railnexus-frontend
+    environment:
+      VITE_API_BASE_URL: http://localhost:4000
+      VITE_WS_URL: http://localhost:4000
+    ports:
+      - "5173:5173"
+    depends_on:
+      backend:
+        condition: service_healthy
+    restart: unless-stopped

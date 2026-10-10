@@ -1,0 +1,13 @@
+{
+  "name": "railnexus",
+  "private": true,
+  "version": "0.1.0",
+  "description": "RailNexus railway reservation system - root orchestration scripts",
+  "scripts": {
+    "setup": "node scripts/dev-setup.mjs",
+    "start": "node scripts/dev-start.mjs",
+    "stop": "node scripts/dev-stop.mjs",
+    "test": "node scripts/dev-test.mjs",
+    "reset-demo": "node scripts/dev-reset-demo.mjs"
+  }
+}
