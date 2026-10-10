@@ -33,12 +33,25 @@ declare module 'oracledb' {
   }
 
   export const OUT_FORMAT_OBJECT: number
+  export const BIND_OUT: number
+  export const NUMBER: number
+  export const STRING: number
+
+  export interface BindParameter {
+    dir?: number
+    type?: number
+    maxSize?: number
+    val?: unknown
+  }
 
   export function createPool(config: PoolConfig): Promise<Pool>
 
   const oracledb: {
     createPool: typeof createPool
     OUT_FORMAT_OBJECT: number
+    BIND_OUT: number
+    NUMBER: number
+    STRING: number
   }
   export default oracledb
 }

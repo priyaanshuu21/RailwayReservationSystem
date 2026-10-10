@@ -9,4 +9,5 @@
 
 @@zone_synonyms.sql
 @@booking_family.sql
+@@iot_family.sql
 @@zone_seed.sql

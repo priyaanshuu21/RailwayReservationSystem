@@ -80,6 +80,18 @@ Evidence (would-be): `scripts/lib/load-oracle.mjs` manifest loader; `npm run dev
 - [x] tests/unit/cache.test.ts, tests/unit/fare.test.ts — 12 jest tests green
 - [~] run against live Oracle/Redis/Mongo — BLOCKED (see blockers)
 
-## Phases 7-11: IoT, React UI, reporting, ops
+## Phase 7: IoT telemetry (IMPLEMENTED, UNVERIFIED)
+
+- [x] db/zone_common/iot_family.sql — IOT_SENSOR / SENSOR_READING / SENSOR_ALERT (kind bands, newest-first index), included by shared + every zone
+- [x] db/plsql/pkg_iot.sql — evaluate band rule, ingest_reading (read + threshold + alert in one txn), latest_value, list_open_alerts, acknowledge_alert (11g-safe ROWNUM top-N)
+- [x] db/iot/seed_sensors.sql — one TEMP/SMOKE/DOOR/AQI sensor per coach, re-runnable (RAILNEXUS + ZONEALL)
+- [x] db/mongo/init-timeseries.mjs — idempotent sensor_readings time-series collection + index
+- [x] backend/src/domain/iot.ts — pure threshold logic mirroring pkg_iot.evaluate
+- [x] backend/src/iot/iotService.ts — zone-routed ingest via pkg_iot + best-effort Mongo snapshot
+- [x] backend/src/api/routes/iot.ts — POST /api/iot/readings, GET /sensors, /sensors/:id/latest, /alerts, POST /alerts/:id/ack (zod-validated)
+- [x] backend/src/index.ts — mounts /api/iot; tests/unit/iot.test.ts (18 tests total green)
+- [~] run on Oracle + Mongo — BLOCKED (OracleServiceXE stopped, no Docker)
+
+## Phases 8-11: React UI, reporting, ops
 
 - pending

@@ -493,6 +493,12 @@ END;
 @@../zone_common/booking_family.sql
 
 -- ---------------------------------------------------------------------------
+-- IoT telemetry family (Phase 7): sensors, readings, alerts. Same DDL in every
+-- zone schema; readings are written to the zone owning the coach.
+-- ---------------------------------------------------------------------------
+@@../zone_common/iot_family.sql
+
+-- ---------------------------------------------------------------------------
 -- TTE duty / station announcement (operational views used by later phases)
 -- ---------------------------------------------------------------------------
 CREATE TABLE tte_assignment (

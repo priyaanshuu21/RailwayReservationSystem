@@ -58,6 +58,10 @@ export const env = {
     db: process.env.MONGO_DB ?? 'railnexus'
   },
 
+  iot: {
+    mongoCollection: process.env.IOT_MONGO_COLLECTION ?? 'sensor_readings'
+  },
+
   jwt: {
     accessSecret: process.env.JWT_ACCESS_SECRET ?? '',
     accessTtl: process.env.JWT_ACCESS_TTL ?? '15m',

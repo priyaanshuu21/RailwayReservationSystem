@@ -45,3 +45,9 @@ json/pkg_json_rules.sql|RAILNEXUS
 json/pkg_json_rules.sql|ZONEALL
 plsql/pkg_outbox.sql|RAILNEXUS
 plsql/pkg_outbox.sql|ZONEALL
+
+# Phase 7 - IoT telemetry (sensor catalogue, readings, alerts)
+plsql/pkg_iot.sql|RAILNEXUS
+plsql/pkg_iot.sql|ZONEALL
+iot/seed_sensors.sql|RAILNEXUS
+iot/seed_sensors.sql|ZONEALL
