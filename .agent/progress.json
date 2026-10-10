@@ -25,9 +25,9 @@
     "8": { "status": "implemented_unverified", "startedAt": "2026-10-10T11:40:00Z", "completedAt": "2026-10-10T12:15:00Z", "commit": "0a566d5", "note": "Reservation & auth API: JWT auth (bcrypt + role resolution), search/availability/book/pay/PNR/cancel, TTE console endpoints, zone-scoped PL/SQL binds; 27 jest tests green; DB runtime blocked." },
     "9": { "status": "implemented_unverified", "startedAt": "2026-10-10T12:20:00Z", "completedAt": "2026-10-10T12:55:00Z", "commit": "266407e", "note": "React SPA: typed API client, auth context, layout, search/booking/payment/PNR/TTE/alerts pages; frontend build+lint+vitest green." },
     "10": { "status": "implemented_unverified", "startedAt": "2026-10-10T13:00:00Z", "completedAt": "2026-10-10T13:35:00Z", "commit": "09e9488", "note": "Reporting/OLAP: analytical views + materialized view, pkg_reporting, reporting service+API, MongoDB telemetry aggregation, ReportingPage UI. Backend 31 tests, frontend green." },
-    "11": { "status": "implemented_unverified", "startedAt": "2026-10-10T13:40:00Z", "completedAt": "2026-10-10T14:05:00Z", "commit": "pending", "note": "Ops/docs: full docker-init bootstrap, CI workflow, README rewrite, ADBMS concept map + OR/NoSQL/reporting docs. Docker runtime unverified (no Docker host)." }
+    "11": { "status": "implemented_unverified", "startedAt": "2026-10-10T13:40:00Z", "completedAt": "2026-10-10T14:05:00Z", "commit": "c6e088b", "note": "Ops/docs: full docker-init bootstrap, CI workflow, README rewrite, ADBMS concept map + OR/NoSQL/reporting docs. Docker runtime unverified (no Docker host)." }
   },
-  "lastSuccessfulCommand": "git push origin main (Phase 0, commit ee5c46d)",
+  "lastSuccessfulCommand": "git push origin main (Phase 11, commit c6e088b)",
   "blockers": [
     "Docker not installed; docker-compose based verification unavailable locally.",
     "OracleServiceXE is stopped and starting it requires administrator elevation (current shell is not elevated). ALL Oracle runtime verification (Phase 1 DDL execution, Phase 2+ PL/SQL, integration tests) is blocked until the user starts the service or provisions Oracle via Docker.",

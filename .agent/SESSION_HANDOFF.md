@@ -31,5 +31,20 @@ and the code itself. State files are hints, not proof.
 
 ## Outstanding issues
 
-- Oracle runtime: blocked (elevation). Everything Oracle-specific must be written and
-  reviewed but cannot be executed here. Do not mark DB-dependent phases verified.
+- Oracle runtime: blocked (elevation). Everything Oracle-specific is written and
+  reviewed but cannot be executed here. DB-dependent phases stay `implemented_unverified`.
+- Redis/Mongo absent. Their paths typecheck + unit-test only.
+
+## Status: all 12 phases implemented (build complete)
+
+Commits: 0 `ee5c46d`, 1 `23369a1`, 2 `7d8839b`, 3 `a01cd1c`, 4 `b82c4e0`,
+5 `f5b675e`, 6 `79c0af5`, 7 `b59102c`, 8 `0a566d5`, 9 `266407e`, 10 `09e9488`,
+11 `c6e088b`. All pushed to `origin/main`.
+
+To verify at runtime (the only remaining work):
+
+1. Start a database stack — either run `docker compose up --build`, or start
+   `OracleServiceXE` as administrator and install Redis/Mongo.
+2. `npm run setup` (loads `db/manifest.txt` then seeds Mongo).
+3. `npm run test` (backend 31 Jest tests, frontend 2 Vitest tests) and exercise the
+   API/UI; promote phase statuses from `implemented_unverified` to `verified`.
