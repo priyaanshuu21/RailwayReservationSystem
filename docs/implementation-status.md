@@ -125,6 +125,11 @@ Evidence (would-be): `scripts/lib/load-oracle.mjs` manifest loader; `npm run dev
 - [x] backend 31 tests green; frontend build/lint/vitest green
 - [~] run on Oracle + Mongo — BLOCKED
 
-## Phase 11: Ops, docs & packaging
+## Phase 11: Ops, docs & packaging (IMPLEMENTED)
 
-- pending
+- [x] db/docker-init/00_bootstrap.sql — full manifest chain (schemas, packages, views, per-zone ZONEALL packages + seeds)
+- [x] .github/workflows/ci.yml — backend (tsc + eslint + jest) and frontend (build, lint, test) jobs on Node 22
+- [x] README.md — accurate stack, features, quickstart, demo accounts, verification, doc map
+- [x] docs/oop-db-notes.md, docs/nosql-justification.md, docs/reporting-architecture.md, docs/adbms-concepts-mapping.md
+- [x] Docker Compose stack (oracle-free, redis, mongo, backend, frontend) + Dockerfiles + nginx
+- [~] `docker compose up` end-to-end — UNVERIFIED (no Docker on the build host)
