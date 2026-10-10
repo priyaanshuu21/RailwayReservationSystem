@@ -57,6 +57,17 @@ Evidence (would-be): `scripts/lib/load-oracle.mjs` manifest loader; `npm run dev
 - [x] db/or/pkg_journey.sql — refresh_object_table, print_train_route (REF->DEREF->segments traversal), stops_between / distance_between, list_all_train_segments
 - [~] run on Oracle — BLOCKED (same blocker as Phase 1)
 
-## Phases 5-11: JSON/Semi-struct, NoSQL, React UI, reporting, ops
+## Phase 5: JSON / semi-structured + cross-store outbox (IMPLEMENTED, UNVERIFIED)
+
+- [x] db/json/migrate_json_columns.sql — train.metadata_json, station_announcement.extra_json (11g-safe CHECK LIKE '{%}')
+- [x] db/json/fare_rule_json.sql — seed fare_rule.fare_json from relational columns
+- [x] db/json/pkg_json_rules.sql — REGEXP_SUBSTR JSON parser helpers + fare_for (no JSON_TABLE dependency; 12.2+ upgrade documented)
+- [x] db/plsql/pkg_outbox.sql — mark_delivered/mark_failed/pending_count/schedule_retry (retry backoff, status N/S/F)
+- [x] db/plsql/pkg_rules.sql — can_book_passenger_train (blocks freight), booking_limit_ok (max 6 active per passenger/train/day), enforce_booking_rules
+- [x] pkg_booking.book_ticket now calls pkg_rules.enforce_booking_rules
+- [x] backend/src/outbox/outboxRelay.ts — polls Oracle domain_outbox (status N, next_attempt <= SYSDATE), publishes to Redis (railnexus:outbox) and writes event snapshot to MongoDB 'outbox_events' (best-effort), marks delivered/failed via DB; relay opt-in via OUTBOX_RELAY_ENABLED
+- [~] run on Oracle + Redis/Mongo — PARTIALLY BLOCKED (Oracle stopped; Redis/Mongo may be portable/binaries; see blockers)
+
+## Phases 6-11: Cache/metadata, IoT, React UI, reporting, ops
 
 - pending

@@ -4,6 +4,7 @@ import helmet from 'helmet'
 import { env } from './config/env'
 import { logger } from './config/logger'
 import { healthRouter } from './api/routes/health'
+import { OutboxRelay } from './outbox/outboxRelay'
 
 export function createApp() {
   const app = express()
@@ -41,9 +42,18 @@ export async function start() {
     logger.info(`railnexus api listening on http://localhost:${env.port}`)
   })
 
+  let relay: OutboxRelay | undefined
+  if (env.oracle.enabled && env.outbox.relayEnabled) {
+    relay = new OutboxRelay(env.outbox.pollMs)
+    relay.start().catch((err) => logger.error('outbox relay failed to start', { err }))
+  }
+
   const shutdown = (signal: string) => {
     logger.info(`received ${signal}, shutting down`)
-    server.close(() => process.exit(0))
+    server.close(async () => {
+      await relay?.stop().catch(() => undefined)
+      process.exit(0)
+    })
     setTimeout(() => process.exit(1), 10_000).unref()
   }
   process.on('SIGINT', () => shutdown('SIGINT'))

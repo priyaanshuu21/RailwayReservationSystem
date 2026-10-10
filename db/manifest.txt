@@ -22,6 +22,8 @@ distributed/book_cross_zone_ticket.sql|RAILNEXUS
 # Phase 3 - PL/SQL application packages (shared schema + every zone schema)
 plsql/pkg_fare.sql|RAILNEXUS
 plsql/pkg_fare.sql|ZONEALL
+plsql/pkg_rules.sql|RAILNEXUS
+plsql/pkg_rules.sql|ZONEALL
 plsql/pkg_booking.sql|RAILNEXUS
 plsql/pkg_booking.sql|ZONEALL
 plsql/pkg_payment.sql|RAILNEXUS
@@ -36,4 +38,10 @@ or/route_journey_types.sql|RAILNEXUS
 or/route_journey_tab.sql|RAILNEXUS
 or/pkg_journey.sql|RAILNEXUS
 
-# Phase 5 PL/SQL (JSON rule documents, outbox relay)
+# Phase 5 - JSON / semi-structured rules + durable outbox relay
+json/migrate_json_columns.sql|RAILNEXUS
+json/fare_rule_json.sql|RAILNEXUS
+json/pkg_json_rules.sql|RAILNEXUS
+json/pkg_json_rules.sql|ZONEALL
+plsql/pkg_outbox.sql|RAILNEXUS
+plsql/pkg_outbox.sql|ZONEALL

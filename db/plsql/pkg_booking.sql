@@ -126,6 +126,9 @@ CREATE OR REPLACE PACKAGE BODY pkg_booking IS
       INTO v_zone_id, v_route_id, v_train_id, v_journey_date
       FROM train_schedule WHERE schedule_id = p_schedule_id;
 
+    -- Business-rule gate: freight never carries passengers; per-user quota.
+    pkg_rules.enforce_booking_rules(p_passenger_id, v_train_id, v_journey_date);
+
     -- Idempotency: an earlier attempt with the same request id is a no-op that
     -- replays the previously issued keys.
     IF p_request_id IS NOT NULL THEN

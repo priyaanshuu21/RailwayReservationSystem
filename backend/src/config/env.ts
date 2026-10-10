@@ -47,6 +47,11 @@ export const env = {
     port: int(process.env.REDIS_PORT, 6379)
   },
 
+  outbox: {
+    relayEnabled: bool(process.env.OUTBOX_RELAY_ENABLED, false),
+    pollMs: int(process.env.OUTBOX_POLL_MS, 5000)
+  },
+
   mongo: {
     enabled: bool(process.env.MONGO_ENABLED, true),
     url: process.env.MONGO_URL ?? 'mongodb://localhost:27017',
