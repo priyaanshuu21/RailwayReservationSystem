@@ -68,6 +68,18 @@ Evidence (would-be): `scripts/lib/load-oracle.mjs` manifest loader; `npm run dev
 - [x] backend/src/outbox/outboxRelay.ts — polls Oracle domain_outbox (status N, next_attempt <= SYSDATE), publishes to Redis (railnexus:outbox) and writes event snapshot to MongoDB 'outbox_events' (best-effort), marks delivered/failed via DB; relay opt-in via OUTBOX_RELAY_ENABLED
 - [~] run on Oracle + Redis/Mongo — PARTIALLY BLOCKED (Oracle stopped; Redis/Mongo may be portable/binaries; see blockers)
 
-## Phases 6-11: Cache/metadata, IoT, React UI, reporting, ops
+## Phase 6: Redis cache + metadata catalogue API (IMPLEMENTED, UNVERIFIED)
+
+- [x] backend/src/cache/redis.ts — RedisCache (JSON get/set with TTL, delByPrefix, atomic SET NX PX lock + token-checked release, ping); no-op when REDIS_ENABLED=false and degrades on runtime errors
+- [x] backend/src/cache/keys.ts — namespaced key builders (rxn:avail/…, rxn:meta:…, rxn:fare:…, rxn:lock:…) + TTL table
+- [x] backend/src/db/oracle.ts — shared RAILNEXUS pool + query() (OUT_FORMAT_OBJECT) + probeOracle()
+- [x] backend/src/domain/fare.ts — pure fare math (band clamp + superfast surcharge), shared/testable, mirrors pkg_fare
+- [x] backend/src/api/routes/metadata.ts — GET /api/metadata/{zones,stations,trains,routes/:id,fares} with Redis caching
+- [x] backend/src/api/routes/health.ts — /ready now probes Oracle (SELECT 1 FROM DUAL), Redis and Mongo
+- [x] backend/src/index.ts — mounts /api/metadata
+- [x] tests/unit/cache.test.ts, tests/unit/fare.test.ts — 12 jest tests green
+- [~] run against live Oracle/Redis/Mongo — BLOCKED (see blockers)
+
+## Phases 7-11: IoT, React UI, reporting, ops
 
 - pending

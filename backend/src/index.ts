@@ -4,6 +4,7 @@ import helmet from 'helmet'
 import { env } from './config/env'
 import { logger } from './config/logger'
 import { healthRouter } from './api/routes/health'
+import { metadataRouter } from './api/routes/metadata'
 import { OutboxRelay } from './outbox/outboxRelay'
 
 export function createApp() {
@@ -19,6 +20,7 @@ export function createApp() {
   app.use(express.json({ limit: '1mb' }))
 
   app.use('/health', healthRouter)
+  app.use('/api/metadata', metadataRouter)
 
   app.get('/api', (_req, res) => {
     res.json({ service: 'railnexus-api', version: '0.1.0', docs: '/api-docs' })

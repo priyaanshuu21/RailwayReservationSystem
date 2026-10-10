@@ -20,7 +20,11 @@ declare module 'oracledb' {
 
   export interface Connection {
     close(): Promise<void>
-    execute<T>(sql: string, binds?: unknown, options?: unknown): Promise<T>
+    execute<T>(
+      sql: string,
+      binds?: unknown,
+      options?: { outFormat?: number; autoCommit?: boolean }
+    ): Promise<T>
   }
 
   export interface Result<T> {
@@ -28,10 +32,13 @@ declare module 'oracledb' {
     rowsAffected: number
   }
 
+  export const OUT_FORMAT_OBJECT: number
+
   export function createPool(config: PoolConfig): Promise<Pool>
 
   const oracledb: {
     createPool: typeof createPool
+    OUT_FORMAT_OBJECT: number
   }
   export default oracledb
 }
