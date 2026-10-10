@@ -8,6 +8,7 @@ import { BookingPage } from './pages/BookingPage'
 import { PnrPage } from './pages/PnrPage'
 import { TtePage } from './pages/TtePage'
 import { AlertsPage } from './pages/AlertsPage'
+import { ReportingPage } from './pages/ReportingPage'
 
 export default function App() {
   return (
@@ -22,6 +23,7 @@ export default function App() {
             <Route path="/pnr" element={<PnrPage />} />
             <Route path="/tte" element={<TtePage />} />
             <Route path="/alerts" element={<AlertsPage />} />
+            <Route path="/reports" element={<ReportingPage />} />
             <Route path="*" element={<Note kind="error">Page not found.</Note>} />
           </Route>
         </Routes>

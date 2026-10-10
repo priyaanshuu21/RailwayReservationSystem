@@ -30,6 +30,11 @@ export function Layout() {
                   TTE
                 </NavLink>
               ) : null}
+              {hasRole('zone_admin', 'super_admin') ? (
+                <NavLink to="/reports" className={linkClass}>
+                  Reports
+                </NavLink>
+              ) : null}
             </nav>
           </div>
           <div className="flex items-center gap-3 text-sm">

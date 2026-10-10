@@ -51,3 +51,7 @@ plsql/pkg_iot.sql|RAILNEXUS
 plsql/pkg_iot.sql|ZONEALL
 iot/seed_sensors.sql|RAILNEXUS
 iot/seed_sensors.sql|ZONEALL
+
+# Phase 10 - reporting / OLAP (views + one materialized view, shared schema)
+reporting/report_views.sql|RAILNEXUS
+plsql/pkg_reporting.sql|RAILNEXUS

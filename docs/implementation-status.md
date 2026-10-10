@@ -114,6 +114,17 @@ Evidence (would-be): `scripts/lib/load-oracle.mjs` manifest loader; `npm run dev
 - [x] frontend build (tsc -b + vite build) green; oxlint warnings only; vitest 2 tests green
 - [~] run against live Oracle/Redis/Mongo — BLOCKED
 
-## Phases 10-11: Reporting, ops
+## Phase 10: Reporting & analytics (IMPLEMENTED, UNVERIFIED)
+
+- [x] db/reporting/report_views.sql — vw_revenue_daily, vw_zone_summary, vw_occupancy_by_schedule, vw_waitlist_pressure, vw_route_popularity + materialized mv_revenue_by_train (refresh on demand)
+- [x] db/plsql/pkg_reporting.sql — pkg_reporting.refresh_materialized
+- [x] backend/src/domain/reporting.ts — occupancyRate + summariseTrend (unit-tested)
+- [x] backend/src/reporting/reportingService.ts — revenue daily/by-train, zone summary, occupancy, waitlist, routes, MV refresh, Mongo telemetry aggregation
+- [x] backend/src/api/routes/reporting.ts — GET /api/reporting/{revenue,revenue/by-train,zones,occupancy,waitlist,routes,telemetry}; POST /refresh (admin)
+- [x] frontend ReportingPage — revenue bars, zone table, occupancy bars (admin nav)
+- [x] backend 31 tests green; frontend build/lint/vitest green
+- [~] run on Oracle + Mongo — BLOCKED
+
+## Phase 11: Ops, docs & packaging
 
 - pending

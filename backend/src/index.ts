@@ -8,6 +8,7 @@ import { metadataRouter } from './api/routes/metadata'
 import { iotRouter } from './api/routes/iot'
 import { authRouter } from './api/routes/auth'
 import { reservationsRouter } from './api/routes/reservations'
+import { reportingRouter } from './api/routes/reporting'
 import { OutboxRelay } from './outbox/outboxRelay'
 
 export function createApp() {
@@ -26,6 +27,7 @@ export function createApp() {
   app.use('/api/metadata', metadataRouter)
   app.use('/api/iot', iotRouter)
   app.use('/api/auth', authRouter)
+  app.use('/api/reporting', reportingRouter)
   app.use('/api', reservationsRouter)
 
   app.get('/api', (_req, res) => {

@@ -119,6 +119,30 @@ export interface TteTicket {
   BOARDING_STATUS: string | null
 }
 
+export interface RevenueDay {
+  REVENUE_DATE: string
+  BOOKING_COUNT: number
+  REVENUE_TOTAL: number
+}
+
+export interface ZoneSummaryRow {
+  ZONE_ID: number
+  ZONE_CODE: string
+  ZONE_NAME: string
+  BOOKING_COUNT: number
+  GROSS_FARE: number
+  CONFIRMED_TICKETS: number
+  WAITLISTED_TICKETS: number
+}
+
+export interface OccupancyRow {
+  SCHEDULE_ID: number
+  COACH_CLASS: string
+  SEAT_COUNT: number
+  OCCUPIED_SEATS: number
+  OCCUPANCY_PCT: number
+}
+
 export const api = {
   login: (email: string, password: string) =>
     post<{ token: string; user: AuthUser }>('/api/auth/login', { email, password }),
@@ -165,5 +189,17 @@ export const api = {
     }),
 
   ackAlert: (zoneCode: string, alertId: number) =>
-    post<{ message: string }>(`/api/iot/alerts/${alertId}/ack`, { zoneCode, actor: 'dashboard' })
+    post<{ message: string }>(`/api/iot/alerts/${alertId}/ack`, { zoneCode, actor: 'dashboard' }),
+
+  revenueDaily: (from?: string, to?: string) => {
+    const params = new URLSearchParams()
+    if (from) params.set('from', from)
+    if (to) params.set('to', to)
+    const qs = params.toString()
+    return request<{ days: RevenueDay[] }>(`/api/reporting/revenue${qs ? `?${qs}` : ''}`)
+  },
+
+  zoneSummary: () => request<{ zones: ZoneSummaryRow[] }>('/api/reporting/zones'),
+
+  occupancy: (limit = 25) => request<{ rows: OccupancyRow[] }>(`/api/reporting/occupancy?limit=${limit}`)
 }
