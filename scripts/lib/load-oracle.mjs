@@ -92,10 +92,10 @@ export async function applySchemaAndSeed(root, log) {
     log(`applying ${file} (as ${t})`)
     const cmd =
       process.platform === 'win32'
-        ? `cmd /c echo exit | "${sqlplus}" -S -L ${connect} @${abs}`
-        : `echo exit | "${sqlplus}" -S -L ${connect} @${abs}`
+        ? `cmd /c echo exit | "${sqlplus}" -S -L ${connect} @"${abs}"`
+        : `echo exit | "${sqlplus}" -S -L ${connect} @"${abs}"`
     try {
-      execSync(cmd, { stdio: 'inherit', encoding: 'utf8' })
+      execSync(cmd, { cwd: path.dirname(abs), stdio: 'inherit', encoding: 'utf8' })
     } catch (err) {
       throw new Error(`Script failed: ${file} - ${err.message}`)
     }
