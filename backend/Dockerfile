@@ -9,6 +9,9 @@ RUN npm ci --omit=optional || npm install --omit=optional
 COPY tsconfig.json ./
 COPY src ./src
 
+# Compile TypeScript so dist/index.js exists before the container starts.
+RUN npm run build
+
 # node-oracledb thin mode ships with the npm package; no Oracle instant client needed.
 ENV NODE_ENV=production
 EXPOSE 4000
