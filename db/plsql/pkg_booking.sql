@@ -117,6 +117,7 @@ CREATE OR REPLACE PACKAGE BODY pkg_booking IS
     v_bid          NUMBER(12);
     v_tid          NUMBER(14);
     v_pnr          VARCHAR2(10);
+    v_ticket_status VARCHAR2(4);
     v_from_station NUMBER(10);
     v_to_station   NUMBER(10);
     v_lines        pkg_fare.fare_lines;

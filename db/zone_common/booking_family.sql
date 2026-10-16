@@ -210,7 +210,7 @@ CREATE TABLE ticket (
   CONSTRAINT fk_ticket_booking FOREIGN KEY (booking_id) REFERENCES booking(booking_id),
   CONSTRAINT fk_ticket_sched FOREIGN KEY (schedule_id) REFERENCES train_schedule(schedule_id)
 );
-CREATE INDEX idx_ticket_pnr ON ticket(pnr);
+-- uq_ticket_pnr already indexes PNR, so no separate PNR lookup index is needed.
 
 CREATE SEQUENCE seq_ticket START WITH 1;
 

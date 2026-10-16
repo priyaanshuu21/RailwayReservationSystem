@@ -17,8 +17,9 @@ WHENEVER SQLERROR CONTINUE
 -- the full reset path drops/recreates the schema via 00_bootstrap.sql).
 -- Order matters: a child must be emptied before the parent it references.
 -- ---------------------------------------------------------------------------
-BEGIN
-  FOR t IN (
+DECLARE
+  TYPE t_names IS TABLE OF VARCHAR2(30);
+  v_names t_names := t_names(
     -- operational rows referencing schedules / people / stations
     'TTE_ASSIGNMENT','STATION_ANNOUNCEMENT',
     -- class policy (references schedule), then inventory (seat->coach->schedule)
@@ -38,9 +39,10 @@ BEGIN
     -- reference data
     'FARE_RULE','TRAIN_ROUTE','STATION_ROUTE','ROUTE','TRAIN',
     'EXPRESS_TRAIN','SUPERFAST_TRAIN','PASSENGER_TRAIN','FREIGHT_TRAIN',
-    'STATION','ZONE')
-  LOOP
-    BEGIN EXECUTE IMMEDIATE 'DELETE FROM ' || t; EXCEPTION WHEN OTHERS THEN NULL; END;
+    'STATION','ZONE');
+BEGIN
+  FOR i IN 1 .. v_names.COUNT LOOP
+    BEGIN EXECUTE IMMEDIATE 'DELETE FROM ' || v_names(i); EXCEPTION WHEN OTHERS THEN NULL; END;
   END LOOP;
   COMMIT;
 END;
@@ -174,72 +176,78 @@ INSERT INTO fare_rule (rule_id, train_type, coach_class, base_rate_per_km, min_f
 -- ---------------------------------------------------------------------------
 -- 6. PEOPLE: 10 passengers + 5 employees (one per role)
 -- Demo password for every sample account is:  Demo@123
--- bcrypt (cost 12) hash: $2a$12$WYYdacJJF4jVoAxP3F3rq.URE0vno6tKh6tEw4oYsjqYC0S8XE9MO
+-- Documented demo logins (see README):
+--   passenger@railnexus.local  (1001, passenger)
+--   tte@railnexus.local        (2001, tte)
+--   station@railnexus.local    (2002, station_master)
+--   zoneadmin@railnexus.local  (2003, zone_admin)
+--   admin@railnexus.local      (2005, super_admin)
+-- bcrypt (cost 12) hash: $2a$12$AMz.2JIl7KyKbXVJNd6NGexGYon/0FtCDP6iRscOpTKKPZHDFTT8e
 -- ---------------------------------------------------------------------------
 -- Passengers (ids 1001..1010)
 INSERT INTO person (person_id, person_type, full_name, date_of_birth, gender, email, phone, password_hash)
-VALUES (1001, 'P', 'Aarav Sharma', DATE '1996-04-12', 'M', 'aarav.demo@railnexus.dev', '+91-90000-00001', '$2a$12$WYYdacJJF4jVoAxP3F3rq.URE0vno6tKh6tEw4oYsjqYC0S8XE9MO');
+VALUES (1001, 'P', 'Aarav Sharma', DATE '1996-04-12', 'M', 'passenger@railnexus.local', '+91-90000-00001', '$2a$12$AMz.2JIl7KyKbXVJNd6NGexGYon/0FtCDP6iRscOpTKKPZHDFTT8e');
 INSERT INTO passenger (person_id, id_document_type, id_document_number, emergency_phone) VALUES (1001, 'PAN', 'AAAAA1234A', '+91-91234-00001');
 
 INSERT INTO person (person_id, person_type, full_name, date_of_birth, gender, email, phone, password_hash)
-VALUES (1002, 'P', 'Meera Nair', DATE '1993-11-02', 'F', 'meera.demo@railnexus.dev', '+91-90000-00002', '$2a$12$WYYdacJJF4jVoAxP3F3rq.URE0vno6tKh6tEw4oYsjqYC0S8XE9MO');
+VALUES (1002, 'P', 'Meera Nair', DATE '1993-11-02', 'F', 'meera.demo@railnexus.dev', '+91-90000-00002', '$2a$12$AMz.2JIl7KyKbXVJNd6NGexGYon/0FtCDP6iRscOpTKKPZHDFTT8e');
 INSERT INTO passenger (person_id, id_document_type, id_document_number, emergency_phone) VALUES (1002, 'PASSPORT', 'K8765432', '+91-91234-00002');
 
 INSERT INTO person (person_id, person_type, full_name, date_of_birth, gender, email, phone, password_hash)
-VALUES (1003, 'P', 'Rohan Gupta', DATE '1990-07-21', 'M', 'rohan.demo@railnexus.dev', '+91-90000-00003', '$2a$12$WYYdacJJF4jVoAxP3F3rq.URE0vno6tKh6tEw4oYsjqYC0S8XE9MO');
+VALUES (1003, 'P', 'Rohan Gupta', DATE '1990-07-21', 'M', 'rohan.demo@railnexus.dev', '+91-90000-00003', '$2a$12$AMz.2JIl7KyKbXVJNd6NGexGYon/0FtCDP6iRscOpTKKPZHDFTT8e');
 INSERT INTO passenger (person_id, id_document_type, id_document_number, emergency_phone) VALUES (1003, 'AADHAAR', '111122223333', '+91-91234-00003');
 
 INSERT INTO person (person_id, person_type, full_name, date_of_birth, gender, email, phone, password_hash)
-VALUES (1004, 'P', 'Priya Patil', DATE '1998-01-30', 'F', 'priya.demo@railnexus.dev', '+91-90000-00004', '$2a$12$WYYdacJJF4jVoAxP3F3rq.URE0vno6tKh6tEw4oYsjqYC0S8XE9MO');
+VALUES (1004, 'P', 'Priya Patil', DATE '1998-01-30', 'F', 'priya.demo@railnexus.dev', '+91-90000-00004', '$2a$12$AMz.2JIl7KyKbXVJNd6NGexGYon/0FtCDP6iRscOpTKKPZHDFTT8e');
 INSERT INTO passenger (person_id, id_document_type, id_document_number, emergency_phone) VALUES (1004, 'PAN', 'BBBBB4567B', '+91-91234-00004');
 
 INSERT INTO person (person_id, person_type, full_name, date_of_birth, gender, email, phone, password_hash)
-VALUES (1005, 'P', 'Kabir Ansari', DATE '1988-09-15', 'M', 'kabir.demo@railnexus.dev', '+91-90000-00005', '$2a$12$WYYdacJJF4jVoAxP3F3rq.URE0vno6tKh6tEw4oYsjqYC0S8XE9MO');
+VALUES (1005, 'P', 'Kabir Ansari', DATE '1988-09-15', 'M', 'kabir.demo@railnexus.dev', '+91-90000-00005', '$2a$12$AMz.2JIl7KyKbXVJNd6NGexGYon/0FtCDP6iRscOpTKKPZHDFTT8e');
 INSERT INTO passenger (person_id, id_document_type, id_document_number, emergency_phone) VALUES (1005, 'DRIVING', 'DL4321XXX', '+91-91234-00005');
 
 INSERT INTO person (person_id, person_type, full_name, date_of_birth, gender, email, phone, password_hash)
-VALUES (1006, 'P', 'Sana Shaikh', DATE '1995-06-25', 'F', 'sana.demo@railnexus.dev', '+91-90000-00006', '$2a$12$WYYdacJJF4jVoAxP3F3rq.URE0vno6tKh6tEw4oYsjqYC0S8XE9MO');
+VALUES (1006, 'P', 'Sana Shaikh', DATE '1995-06-25', 'F', 'sana.demo@railnexus.dev', '+91-90000-00006', '$2a$12$AMz.2JIl7KyKbXVJNd6NGexGYon/0FtCDP6iRscOpTKKPZHDFTT8e');
 INSERT INTO passenger (person_id, id_document_type, id_document_number, emergency_phone) VALUES (1006, 'AADHAAR', '444455556666', '+91-91234-00006');
 
 INSERT INTO person (person_id, person_type, full_name, date_of_birth, gender, email, phone, password_hash)
-VALUES (1007, 'P', 'Dev Prakash', DATE '1991-12-08', 'M', 'dev.demo@railnexus.dev', '+91-90000-00007', '$2a$12$WYYdacJJF4jVoAxP3F3rq.URE0vno6tKh6tEw4oYsjqYC0S8XE9MO');
+VALUES (1007, 'P', 'Dev Prakash', DATE '1991-12-08', 'M', 'dev.demo@railnexus.dev', '+91-90000-00007', '$2a$12$AMz.2JIl7KyKbXVJNd6NGexGYon/0FtCDP6iRscOpTKKPZHDFTT8e');
 INSERT INTO passenger (person_id, id_document_type, id_document_number, emergency_phone) VALUES (1007, 'PAN', 'CCCCC7890C', '+91-91234-00007');
 
 INSERT INTO person (person_id, person_type, full_name, date_of_birth, gender, email, phone, password_hash)
-VALUES (1008, 'P', 'Aisha Khan', DATE '1999-03-17', 'F', 'aisha.demo@railnexus.dev', '+91-90000-00008', '$2a$12$WYYdacJJF4jVoAxP3F3rq.URE0vno6tKh6tEw4oYsjqYC0S8XE9MO');
+VALUES (1008, 'P', 'Aisha Khan', DATE '1999-03-17', 'F', 'aisha.demo@railnexus.dev', '+91-90000-00008', '$2a$12$AMz.2JIl7KyKbXVJNd6NGexGYon/0FtCDP6iRscOpTKKPZHDFTT8e');
 INSERT INTO passenger (person_id, id_document_type, id_document_number, emergency_phone) VALUES (1008, 'AADHAAR', '777788889999', '+91-91234-00008');
 
 INSERT INTO person (person_id, person_type, full_name, date_of_birth, gender, email, phone, password_hash)
-VALUES (1009, 'P', 'Vikram Rathore', DATE '1985-05-01', 'M', 'vikram.demo@railnexus.dev', '+91-90000-00009', '$2a$12$WYYdacJJF4jVoAxP3F3rq.URE0vno6tKh6tEw4oYsjqYC0S8XE9MO');
+VALUES (1009, 'P', 'Vikram Rathore', DATE '1985-05-01', 'M', 'vikram.demo@railnexus.dev', '+91-90000-00009', '$2a$12$AMz.2JIl7KyKbXVJNd6NGexGYon/0FtCDP6iRscOpTKKPZHDFTT8e');
 INSERT INTO passenger (person_id, id_document_type, id_document_number, emergency_phone) VALUES (1009, 'DRIVING', 'DL9999XXX', '+91-91234-00009');
 
 INSERT INTO person (person_id, person_type, full_name, date_of_birth, gender, email, phone, password_hash)
-VALUES (1010, 'P', 'Nandini Rao', DATE '1997-10-29', 'F', 'nandini.demo@railnexus.dev', '+91-90000-00010', '$2a$12$WYYdacJJF4jVoAxP3F3rq.URE0vno6tKh6tEw4oYsjqYC0S8XE9MO');
+VALUES (1010, 'P', 'Nandini Rao', DATE '1997-10-29', 'F', 'nandini.demo@railnexus.dev', '+91-90000-00010', '$2a$12$AMz.2JIl7KyKbXVJNd6NGexGYon/0FtCDP6iRscOpTKKPZHDFTT8e');
 INSERT INTO passenger (person_id, id_document_type, id_document_number, emergency_phone) VALUES (1010, 'PASSPORT', 'T1122334', '+91-91234-00010');
 
 -- Employees (ids 2001..2005): one TTE, one station master, two zone admins, one super admin
 INSERT INTO person (person_id, person_type, full_name, date_of_birth, gender, email, phone, password_hash)
-VALUES (2001, 'E', 'Tarak Tiwari', DATE '1987-02-14', 'M', 'tte.tiwari@railnexus.dev', '+91-80000-00001', '$2a$12$WYYdacJJF4jVoAxP3F3rq.URE0vno6tKh6tEw4oYsjqYC0S8XE9MO');
+VALUES (2001, 'E', 'Tarak Tiwari', DATE '1987-02-14', 'M', 'tte@railnexus.local', '+91-80000-00001', '$2a$12$AMz.2JIl7KyKbXVJNd6NGexGYon/0FtCDP6iRscOpTKKPZHDFTT8e');
 INSERT INTO employee (person_id, employee_no, hire_date, designation, base_station_id) VALUES (2001, 'EMP-1001', DATE '2012-06-01', 'Senior TTE', 102);
 INSERT INTO tte_conductor (employee_id, staff_id, zone_id, shift) VALUES (2001, 'TTE-N-101', 1, 'DAY');
 
 INSERT INTO person (person_id, person_type, full_name, date_of_birth, gender, email, phone, password_hash)
-VALUES (2002, 'E', 'Shivani Singh', DATE '1990-08-08', 'F', 'sm.singh@railnexus.dev', '+91-80000-00002', '$2a$12$WYYdacJJF4jVoAxP3F3rq.URE0vno6tKh6tEw4oYsjqYC0S8XE9MO');
+VALUES (2002, 'E', 'Shivani Singh', DATE '1990-08-08', 'F', 'station@railnexus.local', '+91-80000-00002', '$2a$12$AMz.2JIl7KyKbXVJNd6NGexGYon/0FtCDP6iRscOpTKKPZHDFTT8e');
 INSERT INTO employee (person_id, employee_no, hire_date, designation, base_station_id) VALUES (2002, 'EMP-1002', DATE '2014-01-20', 'Station Master', 103);
 INSERT INTO station_master (employee_id, station_id, zone_id) VALUES (2002, 103, 1);
 
 INSERT INTO person (person_id, person_type, full_name, date_of_birth, gender, email, phone, password_hash)
-VALUES (2003, 'E', 'Arjun Malhotra', DATE '1984-03-03', 'M', 'nz.admin@railnexus.dev', '+91-80000-00003', '$2a$12$WYYdacJJF4jVoAxP3F3rq.URE0vno6tKh6tEw4oYsjqYC0S8XE9MO');
+VALUES (2003, 'E', 'Arjun Malhotra', DATE '1984-03-03', 'M', 'zoneadmin@railnexus.local', '+91-80000-00003', '$2a$12$AMz.2JIl7KyKbXVJNd6NGexGYon/0FtCDP6iRscOpTKKPZHDFTT8e');
 INSERT INTO employee (person_id, employee_no, hire_date, designation, base_station_id) VALUES (2003, 'EMP-1003', DATE '2010-11-11', 'Zonal Manager North', 101);
 INSERT INTO zone_admin (employee_id, zone_id) VALUES (2003, 1);
 
 INSERT INTO person (person_id, person_type, full_name, date_of_birth, gender, email, phone, password_hash)
-VALUES (2004, 'E', 'Feroz Contractor', DATE '1986-12-12', 'M', 'wz.admin@railnexus.dev', '+91-80000-00004', '$2a$12$WYYdacJJF4jVoAxP3F3rq.URE0vno6tKh6tEw4oYsjqYC0S8XE9MO');
+VALUES (2004, 'E', 'Feroz Contractor', DATE '1986-12-12', 'M', 'wz.admin@railnexus.dev', '+91-80000-00004', '$2a$12$AMz.2JIl7KyKbXVJNd6NGexGYon/0FtCDP6iRscOpTKKPZHDFTT8e');
 INSERT INTO employee (person_id, employee_no, hire_date, designation, base_station_id) VALUES (2004, 'EMP-1004', DATE '2011-05-05', 'Zonal Manager West', 201);
 INSERT INTO zone_admin (employee_id, zone_id) VALUES (2004, 2);
 
 INSERT INTO person (person_id, person_type, full_name, date_of_birth, gender, email, phone, password_hash)
-VALUES (2005, 'E', 'Ira Deshpande', DATE '1980-07-07', 'F', 'root.admin@railnexus.dev', '+91-80000-00005', '$2a$12$WYYdacJJF4jVoAxP3F3rq.URE0vno6tKh6tEw4oYsjqYC0S8XE9MO');
+VALUES (2005, 'E', 'Ira Deshpande', DATE '1980-07-07', 'F', 'admin@railnexus.local', '+91-80000-00005', '$2a$12$AMz.2JIl7KyKbXVJNd6NGexGYon/0FtCDP6iRscOpTKKPZHDFTT8e');
 INSERT INTO employee (person_id, employee_no, hire_date, designation, base_station_id) VALUES (2005, 'EMP-1005', DATE '2008-09-09', 'Super Admin', 201);
 INSERT INTO super_admin (employee_id, panel_access) VALUES (2005, 'ALL');
 

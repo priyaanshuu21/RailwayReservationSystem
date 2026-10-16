@@ -9,7 +9,7 @@
 -- =============================================================================
 
 SET SERVEROUTPUT ON
-WHENVER SQLERROR CONTINUE
+WHENEVER SQLERROR CONTINUE
 
 CREATE OR REPLACE PACKAGE pkg_iot IS
   FUNCTION evaluate(p_value IN NUMBER, p_min IN NUMBER, p_max NUMBER) RETURN VARCHAR2;

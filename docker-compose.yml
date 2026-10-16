@@ -27,7 +27,7 @@ services:
       APP_USER: ${ORACLE_USER:-RAILNEXUS}
       APP_USER_PASSWORD: ${ORACLE_PASSWORD:-railnexus_dev}
     ports:
-      - "1521:1521"
+      - "${ORACLE_HOST_PORT:-1521}:1521"
     volumes:
       - oracle-data:/opt/oracle/oradata
       - ./db/docker-init:/container-entrypoint-initdb.d:ro

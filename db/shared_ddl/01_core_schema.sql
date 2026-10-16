@@ -444,8 +444,8 @@ CREATE TABLE station_route (
 );
 -- B-tree on FK to STATION for station views (station master schedules).
 CREATE INDEX idx_sr_station ON station_route(station_id);
--- Hot index for journey-segment lookup by stop range.
-CREATE INDEX idx_sr_order ON station_route(route_id, stop_order);
+-- (route_id, stop_order) is already indexed by the UNIQUE constraint
+-- uq_station_route_order, so no separate hot index is needed.
 
 CREATE TABLE train_route (
   train_id     NUMBER(10)   NOT NULL,
@@ -542,5 +542,35 @@ BEFORE INSERT ON station_announcement FOR EACH ROW
 WHEN (NEW.announcement_id IS NULL)
 BEGIN
   :NEW.announcement_id := seq_announcement.NEXTVAL;
+END;
+/
+
+-- ---------------------------------------------------------------------------
+-- Cross-schema privileges (dev bootstrap). The zone schemas and the reporting
+-- mart read shared reference/catalogue data through synonyms, and the zone
+-- booking family holds foreign keys into shared TRAIN/ROUTE/STATION/ZONE/
+-- PERSON, so the shared owner grants SELECT + REFERENCES on every shared
+-- object. Schema-owner scoped (not global ANY privileges); re-run safe.
+-- ---------------------------------------------------------------------------
+DECLARE
+  TYPE t_users IS TABLE OF VARCHAR2(40);
+  v_users t_users := t_users('RAILNEXUS_NORTH','RAILNEXUS_WEST',
+                             'RAILNEXUS_SOUTH','RAILNEXUS_REPORTING');
+BEGIN
+  FOR u IN 1 .. v_users.COUNT LOOP
+    FOR o IN (SELECT object_name, object_type FROM user_objects
+               WHERE object_type IN ('TABLE','VIEW')) LOOP
+      BEGIN
+        EXECUTE IMMEDIATE 'GRANT SELECT ON "' || o.object_name || '" TO ' || v_users(u);
+      EXCEPTION WHEN OTHERS THEN NULL;
+      END;
+      IF o.object_type = 'TABLE' THEN
+        BEGIN
+          EXECUTE IMMEDIATE 'GRANT REFERENCES ON "' || o.object_name || '" TO ' || v_users(u);
+        EXCEPTION WHEN OTHERS THEN NULL;
+        END;
+      END IF;
+    END LOOP;
+  END LOOP;
 END;
 /

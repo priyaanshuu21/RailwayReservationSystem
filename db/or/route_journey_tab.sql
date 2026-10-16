@@ -12,8 +12,15 @@
 SET SERVEROUTPUT ON
 WHENEVER SQLERROR CONTINUE
 
-DROP TABLE route_journey_tab PURGE;
-DROP TABLE train_route_or PURGE;
+-- Re-runnable: drop dependents first, tolerating "does not exist".
+BEGIN
+  EXECUTE IMMEDIATE 'DROP TABLE train_route_or PURGE';
+EXCEPTION WHEN OTHERS THEN NULL; END;
+/
+BEGIN
+  EXECUTE IMMEDIATE 'DROP TABLE route_journey_tab PURGE';
+EXCEPTION WHEN OTHERS THEN NULL; END;
+/
 
 CREATE TABLE route_journey_tab OF route_journey_t (
   PRIMARY KEY (route_id)

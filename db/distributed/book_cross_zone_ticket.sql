@@ -109,9 +109,11 @@ CREATE OR REPLACE PACKAGE BODY pkg_cross_zone IS
     END IF;
 
     -- 2) Idempotent ledger write in the shared schema.
-    IF p_request_id IS NOT NULL AND EXISTS (SELECT 1 FROM booking WHERE request_id = p_request_id) THEN
-      SELECT booking_id INTO o_booking_id FROM booking WHERE request_id = p_request_id;
-      RETURN;
+    IF p_request_id IS NOT NULL THEN
+      BEGIN
+        SELECT booking_id INTO o_booking_id FROM booking WHERE request_id = p_request_id;
+        RETURN;
+      EXCEPTION WHEN NO_DATA_FOUND THEN NULL; END;
     END IF;
 
     INSERT INTO booking (booking_id, request_id, booking_ref, person_id, schedule_id,

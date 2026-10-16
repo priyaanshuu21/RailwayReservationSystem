@@ -60,11 +60,12 @@ export async function searchTrains(
             TO_CHAR(s.arrival_time, 'YYYY-MM-DD HH24:MI') AS arrival_time,
             s.zone_id
        FROM station_route fs
-       JOIN station_route ts ON ts.route_id = fs.route_id AND ts.station_id = :2
+       JOIN station_route ts ON ts.route_id = fs.route_id
        JOIN route r ON r.route_id = fs.route_id
        JOIN train_schedule s ON s.route_id = fs.route_id
        JOIN train t ON t.train_id = s.train_id
       WHERE fs.station_id = :1
+        AND ts.station_id = :2
         AND fs.stop_order < ts.stop_order
         AND TRUNC(s.journey_date) = TO_DATE(:3, 'YYYY-MM-DD')
         AND s.status = 'ACTIVE'
