@@ -56,6 +56,8 @@ iot/seed_sensors.sql|ZONEALL
 reporting/report_views.sql|RAILNEXUS
 plsql/pkg_reporting.sql|RAILNEXUS
 
+plsql/pkg_announcements.sql|RAILNEXUS
+
 # Final pass - recompile objects invalidated by later DDL (e.g. JSON ALTER TABLE)
 common/recompile_invalid.sql|RAILNEXUS
 common/recompile_invalid.sql|ZONEALL

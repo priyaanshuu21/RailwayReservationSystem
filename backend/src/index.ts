@@ -1,4 +1,5 @@
 import express from 'express'
+import { operationsRouter } from './api/routes/operations'
 import cors from 'cors'
 import helmet from 'helmet'
 import { env } from './config/env'
@@ -18,8 +19,8 @@ export function createApp() {
   app.use(
     cors({
       origin: env.corsOrigins,
-      credentials: true
-    })
+      credentials: true,
+    }),
   )
   app.use(express.json({ limit: '1mb' }))
 
@@ -29,19 +30,30 @@ export function createApp() {
   app.use('/api/auth', authRouter)
   app.use('/api/reporting', reportingRouter)
   app.use('/api', reservationsRouter)
+  app.use('/api', operationsRouter)
 
   app.get('/api', (_req, res) => {
     res.json({ service: 'railnexus-api', version: '0.1.0', docs: '/api-docs' })
   })
 
-  app.use((err: unknown, _req: express.Request, res: express.Response, _next: express.NextFunction) => {
-    logger.error('unhandled error', { err })
-    res.status(500).json({
-      code: 'INTERNAL_ERROR',
-      message: 'An unexpected error occurred',
-      details: {}
-    })
-  })
+  app.use(
+    (
+      err: unknown,
+      _req: express.Request,
+      res: express.Response,
+      _next: express.NextFunction,
+    ) => {
+      logger.error('unhandled error', {
+        err,
+        message: err instanceof Error ? err.message : String(err),
+      })
+      res.status(500).json({
+        code: 'INTERNAL_ERROR',
+        message: 'An unexpected error occurred',
+        details: {},
+      })
+    },
+  )
 
   return app
 }
@@ -55,7 +67,9 @@ export async function start() {
   let relay: OutboxRelay | undefined
   if (env.oracle.enabled && env.outbox.relayEnabled) {
     relay = new OutboxRelay(env.outbox.pollMs)
-    relay.start().catch((err) => logger.error('outbox relay failed to start', { err }))
+    relay
+      .start()
+      .catch((err) => logger.error('outbox relay failed to start', { err }))
   }
 
   const shutdown = (signal: string) => {

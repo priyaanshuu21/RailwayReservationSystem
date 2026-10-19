@@ -1,7 +1,11 @@
 import type { Connection } from 'oracledb'
 import { env } from '../config/env'
 import { logger } from '../config/logger'
-import { zoneForCode, withZoneConnection, type ZoneDefinition } from '../db/zoneRouter'
+import {
+  zoneForCode,
+  withZoneConnection,
+  type ZoneDefinition,
+} from '../db/zoneRouter'
 import type { ReadingStatus } from '../domain/iot'
 
 // IoT ingestion service (Phase 7): readings are written into the zone schema
@@ -35,8 +39,12 @@ export function resolveZone(code: string): ZoneDefinition {
   return zone
 }
 
-async function callIngest(conn: Connection, sensorId: number, value: number): Promise<IngestResult> {
-  const oracledb = await import('oracledb')
+async function callIngest(
+  conn: Connection,
+  sensorId: number,
+  value: number,
+): Promise<IngestResult> {
+  const { default: oracledb } = await import('oracledb')
   const res = await conn.execute<{ outBinds?: Array<number | string | null> }>(
     'BEGIN pkg_iot.ingest_reading(:sid, :val, :rid, :st, :aid); END;',
     [
@@ -44,22 +52,24 @@ async function callIngest(conn: Connection, sensorId: number, value: number): Pr
       value,
       { dir: oracledb.BIND_OUT, type: oracledb.NUMBER },
       { dir: oracledb.BIND_OUT, type: oracledb.STRING },
-      { dir: oracledb.BIND_OUT, type: oracledb.NUMBER }
-    ]
+      { dir: oracledb.BIND_OUT, type: oracledb.NUMBER },
+    ],
   )
   const out = res.outBinds ?? []
   return {
-    readingId: Number(out[2]),
-    status: String(out[3]) as ReadingStatus,
-    alertId: out[4] === null || out[4] === undefined ? null : Number(out[4])
+    readingId: Number(out[0]),
+    status: String(out[1]) as ReadingStatus,
+    alertId: out[2] === null || out[2] === undefined ? null : Number(out[2]),
   }
 }
 
 export async function ingestReading(input: IngestInput): Promise<IngestResult> {
   const zone = resolveZone(input.zoneCode)
-  const result = await withZoneConnection(zone, (conn) => callIngest(conn, input.sensorId, input.value))
+  const result = await withZoneConnection(zone, (conn) =>
+    callIngest(conn, input.sensorId, input.value),
+  )
   await persistReadingMongo(zone.code, input, result).catch((err) =>
-    logger.warn('iot mongo snapshot failed (degrading)', { err })
+    logger.warn('iot mongo snapshot failed (degrading)', { err }),
   )
   return result
 }
@@ -67,11 +77,13 @@ export async function ingestReading(input: IngestInput): Promise<IngestResult> {
 async function persistReadingMongo(
   zoneCode: string,
   input: IngestInput,
-  result: IngestResult
+  result: IngestResult,
 ): Promise<void> {
   if (!env.mongo.enabled) return
   const { MongoClient } = await import('mongodb')
-  const client = new MongoClient(env.mongo.url, { serverSelectionTimeoutMS: 2000 })
+  const client = new MongoClient(env.mongo.url, {
+    serverSelectionTimeoutMS: 2000,
+  })
   await client.connect()
   try {
     await client
@@ -82,7 +94,7 @@ async function persistReadingMongo(
         sensor: { zone: zoneCode, sensorId: input.sensorId },
         value: input.value,
         status: result.status,
-        alertId: result.alertId
+        alertId: result.alertId,
       } as Record<string, unknown>)
   } finally {
     await client.close().catch(() => undefined)

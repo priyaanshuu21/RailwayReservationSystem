@@ -8,7 +8,7 @@ export interface OracleConn {
   execute<T>(
     sql: string,
     binds?: unknown[] | Record<string, unknown>,
-    options?: { outFormat?: number; autoCommit?: boolean }
+    options?: { outFormat?: number; autoCommit?: boolean },
   ): Promise<{ rows?: T[]; rowsAffected?: number }>
   close(): Promise<void>
 }
@@ -27,26 +27,37 @@ export function connectString(): string {
 export function getSharedPool(): Promise<OraclePool> {
   if (!poolPromise) {
     poolPromise = (async () => {
-      const oracledb = await import('oracledb')
+      const { default: oracledb } = await import('oracledb')
       const pool = await oracledb.createPool({
         user: env.oracle.user,
         password: env.oracle.password,
         connectString: connectString(),
         poolMin: env.oracle.pool.min,
-        poolMax: env.oracle.pool.max
+        poolMax: env.oracle.pool.max,
       })
       return pool as unknown as OraclePool
-    })()
+    })().catch((err) => {
+      poolPromise = null
+      throw err
+    })
   }
   return poolPromise
 }
 
-export async function query<T>(sql: string, binds: unknown[] = []): Promise<T[]> {
-  const oracledb = await import('oracledb')
+export async function query<T>(
+  sql: string,
+  binds: unknown[] = [],
+): Promise<T[]> {
+  const { default: oracledb } = await import('oracledb')
   const pool = await getSharedPool()
   const conn = await pool.getConnection()
   try {
-    const res = await conn.execute<T>(sql, binds, { outFormat: oracledb.OUT_FORMAT_OBJECT })
+    const namedBinds = Object.fromEntries(
+      binds.map((value, index) => [String(index + 1), value]),
+    )
+    const res = await conn.execute<T>(sql, namedBinds, {
+      outFormat: oracledb.OUT_FORMAT_OBJECT,
+    })
     return res.rows ?? []
   } finally {
     await conn.close().catch(() => undefined)

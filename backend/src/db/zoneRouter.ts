@@ -20,9 +20,27 @@ export interface ZoneDefinition {
 }
 
 export const ZONES: readonly ZoneDefinition[] = [
-  { code: 'NR', zoneId: 1, schema: env.oracle.zoneUser.NORTH, link: 'ZONE_NORTH', stationIds: [101, 102, 103, 104] },
-  { code: 'WR', zoneId: 2, schema: env.oracle.zoneUser.WEST, link: 'ZONE_WEST', stationIds: [201, 202, 203] },
-  { code: 'SR', zoneId: 3, schema: env.oracle.zoneUser.SOUTH, link: 'ZONE_SOUTH', stationIds: [301, 302, 303] }
+  {
+    code: 'NR',
+    zoneId: 1,
+    schema: env.oracle.zoneUser.NORTH,
+    link: 'ZONE_NORTH',
+    stationIds: [101, 102, 103, 104],
+  },
+  {
+    code: 'WR',
+    zoneId: 2,
+    schema: env.oracle.zoneUser.WEST,
+    link: 'ZONE_WEST',
+    stationIds: [201, 202, 203],
+  },
+  {
+    code: 'SR',
+    zoneId: 3,
+    schema: env.oracle.zoneUser.SOUTH,
+    link: 'ZONE_SOUTH',
+    stationIds: [301, 302, 303],
+  },
 ]
 
 export function zoneForStation(stationId: number): ZoneDefinition | undefined {
@@ -41,7 +59,11 @@ export function zoneForZoneId(zoneId: number): ZoneDefinition | undefined {
 // therefore common. If zones are moved onto dedicated nodes, extend this with a
 // per-zone host/service map keyed by ZoneCode.
 export function zoneConnectString(): string {
-  return oracleConnectString(env.oracle.host, env.oracle.port, env.oracle.service)
+  return oracleConnectString(
+    env.oracle.host,
+    env.oracle.port,
+    env.oracle.service,
+  )
 }
 
 const pools = new Map<string, Promise<Pool>>()
@@ -50,22 +72,25 @@ function poolFor(zone: ZoneDefinition): Promise<Pool> {
   const existing = pools.get(zone.code)
   if (existing) return existing
   const creating = (async () => {
-    const oracledb = await import('oracledb')
+    const { default: oracledb } = await import('oracledb')
     return oracledb.createPool({
       user: zone.schema,
       password: env.oracle.zonePassword,
       connectString: zoneConnectString(),
       poolMin: env.oracle.pool.min,
-      poolMax: env.oracle.pool.max
+      poolMax: env.oracle.pool.max,
     })
   })()
+  creating.catch(() => {
+    if (pools.get(zone.code) === creating) pools.delete(zone.code)
+  })
   pools.set(zone.code, creating)
   return creating
 }
 
 export async function withZoneConnection<T>(
   zone: ZoneDefinition,
-  fn: (conn: Connection) => Promise<T> | T
+  fn: (conn: Connection) => Promise<T> | T,
 ): Promise<T> {
   const pool = await poolFor(zone)
   const conn = await pool.getConnection()
@@ -79,7 +104,9 @@ export async function withZoneConnection<T>(
 export async function closeZonePools(): Promise<void> {
   const pending = Array.from(pools.values())
   pools.clear()
-  await Promise.all(pending.map((p) => p.then((pool) => pool.close()).catch(() => undefined)))
+  await Promise.all(
+    pending.map((p) => p.then((pool) => pool.close()).catch(() => undefined)),
+  )
 }
 
 export const zoneRouter = {
@@ -89,5 +116,5 @@ export const zoneRouter = {
   zoneForZoneId,
   zoneConnectString,
   withZoneConnection,
-  closeZonePools
+  closeZonePools,
 }

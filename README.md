@@ -65,6 +65,15 @@ The database is auto-detected at runtime: when Oracle is unreachable the API sti
 `/health` reports the dependency as down, and data endpoints fail loudly instead of
 fabricating results.
 
+## October 2026 presentation
+
+The demo covers **1–30 October 2026**, with six passenger trains daily, real seeded
+bookings/payments, a waiting-list cancellation example, and distinct dashboards for
+all five actors. After the database stack starts, run `npm run demo:prepare`.
+See [the presentation walkthrough](docs/demo-walkthrough.md) for exact role-by-role
+steps, sample journeys, procedures/triggers to explain, and SQL evidence. Run
+`npm run demo:verify` against the running API for the full regression scenario.
+
 ## Demo accounts
 
 After seeding (`db/shared_ddl/02_seed_data.sql`), all accounts share the password

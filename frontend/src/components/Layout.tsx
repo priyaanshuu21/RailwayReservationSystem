@@ -15,17 +15,37 @@ export function Layout() {
             <NavLink to="/" className="text-lg font-bold text-primary">
               RailNexus
             </NavLink>
-            <nav className="flex items-center gap-1">
+            <nav className="flex flex-wrap items-center gap-1">
               <NavLink to="/search" className={linkClass}>
                 Search
               </NavLink>
               <NavLink to="/pnr" className={linkClass}>
-                PNR
+                My bookings / PNR
               </NavLink>
-              <NavLink to="/alerts" className={linkClass}>
-                Alerts
+              <NavLink to="/notices" className={linkClass}>
+                Notices
               </NavLink>
               {hasRole('tte', 'station_master', 'zone_admin', 'super_admin') ? (
+                <NavLink to="/alerts" className={linkClass}>
+                  Staff alerts
+                </NavLink>
+              ) : null}
+              {hasRole('station_master') ? (
+                <NavLink to="/station" className={linkClass}>
+                  Station desk
+                </NavLink>
+              ) : null}
+              {hasRole('zone_admin') ? (
+                <NavLink to="/zone" className={linkClass}>
+                  Zone dashboard
+                </NavLink>
+              ) : null}
+              {hasRole('super_admin') ? (
+                <NavLink to="/admin" className={linkClass}>
+                  System dashboard
+                </NavLink>
+              ) : null}
+              {hasRole('tte', 'super_admin') ? (
                 <NavLink to="/tte" className={linkClass}>
                   TTE
                 </NavLink>
@@ -40,8 +60,13 @@ export function Layout() {
           <div className="flex items-center gap-3 text-sm">
             {user ? (
               <>
-                <span className="text-muted">{user.fullName}</span>
-                <button onClick={logout} className="rounded px-3 py-1.5 font-medium text-danger hover:bg-danger/10">
+                <span className="text-muted">
+                  {user.fullName} · {user.roles.join(', ')}
+                </span>
+                <button
+                  onClick={logout}
+                  className="rounded px-3 py-1.5 font-medium text-danger hover:bg-danger/10"
+                >
                   Sign out
                 </button>
               </>

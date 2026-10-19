@@ -49,9 +49,13 @@ CREATE OR REPLACE PACKAGE BODY pkg_payment IS
     o_payment_id    OUT NUMBER
   ) IS
     v_pid NUMBER(14);
+    v_fare NUMBER; v_status VARCHAR2(3);
   BEGIN
     -- Idempotent replay of the same gateway request.
     IF p_request_id IS NOT NULL THEN
+      SELECT COUNT(*) INTO v_pid FROM payment WHERE request_id=p_request_id
+        AND (booking_id<>p_booking_id OR amount<>p_amount OR payment_method<>p_method);
+      IF v_pid>0 THEN RAISE_APPLICATION_ERROR(-20065,'Payment request key belongs to another payment'); END IF;
       BEGIN
         SELECT payment_id INTO v_pid FROM payment WHERE request_id = p_request_id;
         o_payment_id := v_pid;
@@ -59,6 +63,12 @@ CREATE OR REPLACE PACKAGE BODY pkg_payment IS
       EXCEPTION WHEN NO_DATA_FOUND THEN NULL; END;
     END IF;
 
+    SELECT fare_total,status INTO v_fare,v_status FROM booking WHERE booking_id=p_booking_id FOR UPDATE;
+    IF v_status<>'BOK' OR p_amount<>v_fare THEN
+      RAISE_APPLICATION_ERROR(-20063,'Payment must equal the fare of an active booking');
+    END IF;
+    SELECT COUNT(*) INTO v_pid FROM payment WHERE booking_id=p_booking_id AND status='CAP';
+    IF v_pid>0 THEN RAISE_APPLICATION_ERROR(-20064,'Booking is already paid'); END IF;
     INSERT INTO payment (payment_id, booking_id, payment_method, amount, status,
                          provider_ref, request_id)
     VALUES (seq_payment.NEXTVAL, p_booking_id, p_method, p_amount, 'PND',
@@ -84,6 +94,10 @@ CREATE OR REPLACE PACKAGE BODY pkg_payment IS
   PROCEDURE capture_payment(p_payment_id IN NUMBER) IS
     v_booking NUMBER(12);
   BEGIN
+    SELECT booking_id INTO v_booking FROM payment WHERE payment_id=p_payment_id;
+    SELECT booking_id INTO v_booking FROM booking WHERE booking_id=v_booking AND status='BOK' FOR UPDATE;
+    SELECT COUNT(*) INTO v_booking FROM payment WHERE payment_id=p_payment_id AND status='CAP';
+    IF v_booking=1 THEN RETURN; END IF;
     UPDATE payment SET status = 'CAP', processed_at = SYSTIMESTAMP
      WHERE payment_id = p_payment_id AND status = 'PND';
     IF SQL%ROWCOUNT = 0 THEN

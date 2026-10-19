@@ -1,16 +1,28 @@
 import { useEffect, useState, type FormEvent } from 'react'
 import { Link } from 'react-router-dom'
-import dayjs from 'dayjs'
 import { api, type SearchTrain, type Station } from '../lib/api'
-import { Badge, Button, Card, Field, Input, Note, Select } from '../components/ui'
+import {
+  Badge,
+  Button,
+  Card,
+  Field,
+  Input,
+  Note,
+  Select,
+} from '../components/ui'
 
-const TYPE_LABEL: Record<string, string> = { E: 'Express', S: 'Superfast', P: 'Passenger', F: 'Freight' }
+const TYPE_LABEL: Record<string, string> = {
+  E: 'Express',
+  S: 'Superfast',
+  P: 'Passenger',
+  F: 'Freight',
+}
 
 export function SearchPage() {
   const [stations, setStations] = useState<Station[]>([])
-  const [from, setFrom] = useState('')
-  const [to, setTo] = useState('')
-  const [date, setDate] = useState(dayjs().add(1, 'day').format('YYYY-MM-DD'))
+  const [from, setFrom] = useState('101')
+  const [to, setTo] = useState('301')
+  const [date, setDate] = useState('2026-10-20')
   const [trains, setTrains] = useState<SearchTrain[] | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [busy, setBusy] = useState(false)
@@ -19,7 +31,9 @@ export function SearchPage() {
     api
       .stations()
       .then((res) => setStations(res.stations))
-      .catch(() => setError('Could not load stations (is the API and Oracle reachable?)'))
+      .catch(() =>
+        setError('Could not load stations (is the API and Oracle reachable?)'),
+      )
   }, [])
 
   async function onSearch(e: FormEvent) {
@@ -41,9 +55,25 @@ export function SearchPage() {
   return (
     <div className="flex flex-col gap-6">
       <Card title="Find a train">
-        <form onSubmit={onSearch} className="grid grid-cols-1 gap-4 sm:grid-cols-4">
+        <div className="mb-4">
+          <Note>
+            Demo dates: 1–30 October 2026, inclusive. Six passenger trains run
+            every day on their listed routes. Try Northvale Junction → Southbay
+            City (10001), Westport Central → Tamarind Hill (10002), or Southbay
+            City → Tamarind Hill (13002). The 20 October, train 10001, 1A
+            compartment demonstrates the waiting list.
+          </Note>
+        </div>
+        <form
+          onSubmit={onSearch}
+          className="grid grid-cols-1 gap-4 sm:grid-cols-4"
+        >
           <Field label="From">
-            <Select value={from} onChange={(e) => setFrom(e.target.value)} required>
+            <Select
+              value={from}
+              onChange={(e) => setFrom(e.target.value)}
+              required
+            >
               <option value="">Select station</option>
               {stations.map((s) => (
                 <option key={s.STATION_ID} value={s.STATION_ID}>
@@ -63,7 +93,14 @@ export function SearchPage() {
             </Select>
           </Field>
           <Field label="Journey date">
-            <Input type="date" value={date} onChange={(e) => setDate(e.target.value)} required />
+            <Input
+              type="date"
+              min="2026-10-01"
+              max="2026-10-30"
+              value={date}
+              onChange={(e) => setDate(e.target.value)}
+              required
+            />
           </Field>
           <div className="flex items-end">
             <Button type="submit" disabled={busy} className="w-full">
@@ -71,7 +108,11 @@ export function SearchPage() {
             </Button>
           </div>
         </form>
-        {error ? <div className="mt-4"><Note kind="error">{error}</Note></div> : null}
+        {error ? (
+          <div className="mt-4">
+            <Note kind="error">{error}</Note>
+          </div>
+        ) : null}
       </Card>
 
       {trains ? (
@@ -81,19 +122,27 @@ export function SearchPage() {
           ) : (
             <ul className="flex flex-col divide-y divide-line">
               {trains.map((t) => (
-                <li key={t.SCHEDULE_ID} className="flex flex-wrap items-center justify-between gap-3 py-3">
+                <li
+                  key={t.SCHEDULE_ID}
+                  className="flex flex-wrap items-center justify-between gap-3 py-3"
+                >
                   <div>
                     <div className="flex items-center gap-2">
-                      <span className="font-semibold text-ink">{t.TRAIN_NO} {t.TRAIN_NAME}</span>
-                      <Badge tone="info">{TYPE_LABEL[t.TRAIN_TYPE] ?? t.TRAIN_TYPE}</Badge>
+                      <span className="font-semibold text-ink">
+                        {t.TRAIN_NO} {t.TRAIN_NAME}
+                      </span>
+                      <Badge tone="info">
+                        {TYPE_LABEL[t.TRAIN_TYPE] ?? t.TRAIN_TYPE}
+                      </Badge>
                     </div>
                     <p className="text-sm text-muted">
-                      {t.DEPARTURE_TIME} → {t.ARRIVAL_TIME} · {t.DISTANCE_KM} km · zone {t.ZONE_ID}
+                      {t.DEPARTURE_TIME} → {t.ARRIVAL_TIME} · {t.DISTANCE_KM} km
+                      · zone {t.ZONE_ID}
                     </p>
                   </div>
                   <Link
                     to={`/book?scheduleId=${t.SCHEDULE_ID}&from=${t.FROM_STOP}&to=${t.TO_STOP}&train=${encodeURIComponent(
-                      `${t.TRAIN_NO} ${t.TRAIN_NAME}`
+                      `${t.TRAIN_NO} ${t.TRAIN_NAME}`,
                     )}`}
                   >
                     <Button>Book</Button>

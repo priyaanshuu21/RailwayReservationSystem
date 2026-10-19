@@ -22,7 +22,11 @@ interface PoolLike {
   close(): Promise<void>
 }
 interface ConnectionLike {
-  execute<T>(sql: string, binds?: unknown[], options?: { autoCommit?: boolean }): Promise<{ rows?: T[] }>
+  execute<T>(
+    sql: string,
+    binds?: unknown[],
+    options?: { autoCommit?: boolean },
+  ): Promise<{ rows?: T[] }>
   close(): Promise<void>
 }
 
@@ -39,9 +43,13 @@ export class OutboxRelay {
     logger.info(`outbox relay started (poll ${this.pollMs}ms)`)
     await this.tick()
     if (this.stopping) return
-    this.timer = setInterval(() => void this.tick().catch((err) => {
-      logger.error('outbox tick error', { err })
-    }), this.pollMs)
+    this.timer = setInterval(
+      () =>
+        void this.tick().catch((err) => {
+          logger.error('outbox tick error', { err })
+        }),
+      this.pollMs,
+    )
     this.timer.unref?.()
   }
 
@@ -59,14 +67,14 @@ export class OutboxRelay {
   private pool(): Promise<PoolLike> {
     if (!this.poolPromise) {
       this.poolPromise = (async () => {
-        const oracledb = await import('oracledb')
+        const { default: oracledb } = await import('oracledb')
         const connectString = `${env.oracle.host}:${env.oracle.port}/${env.oracle.service}`
         return oracledb.createPool({
           user: env.oracle.user,
           password: env.oracle.password,
           connectString,
           poolMin: 1,
-          poolMax: 2
+          poolMax: 2,
         })
       })()
     }
@@ -81,7 +89,10 @@ export class OutboxRelay {
       try {
         await this.dispatch(event)
         await this.mark(event.eventId, true)
-        logger.info('outbox delivered', { eventId: event.eventId, eventType: event.eventType })
+        logger.info('outbox delivered', {
+          eventId: event.eventId,
+          eventType: event.eventType,
+        })
       } catch (err) {
         await this.mark(event.eventId, false)
         logger.warn('outbox delivery failed', { eventId: event.eventId, err })
@@ -98,13 +109,13 @@ export class OutboxRelay {
            FROM domain_outbox
           WHERE status = 'N' AND next_attempt <= SYSTIMESTAMP
             AND ROWNUM <= 50
-          ORDER BY event_id`
+          ORDER BY event_id`,
       )
       return (res.rows ?? []).map((row) => ({
         eventId: Number(row[0]),
         eventType: String(row[1]),
         aggregateId: String(row[2]),
-        payload: String(row[3] ?? '')
+        payload: String(row[3] ?? ''),
       }))
     } finally {
       await conn.close()
@@ -120,7 +131,7 @@ export class OutboxRelay {
           `UPDATE domain_outbox SET status = 'S', delivered_at = SYSTIMESTAMP
             WHERE event_id = :1 AND status = 'N'`,
           [eventId],
-          { autoCommit: true }
+          { autoCommit: true },
         )
       } else {
         await conn.execute(
@@ -130,7 +141,7 @@ export class OutboxRelay {
                   next_attempt = SYSTIMESTAMP + NUMTODSINTERVAL((attempts + 1) * 10, 'SECOND')
             WHERE event_id = :1`,
           [eventId],
-          { autoCommit: true }
+          { autoCommit: true },
         )
       }
     } finally {
@@ -142,7 +153,7 @@ export class OutboxRelay {
     const message = JSON.stringify({
       eventType: event.eventType,
       aggregateId: event.aggregateId,
-      payload: event.payload
+      payload: event.payload,
     })
     const tasks: Promise<unknown>[] = []
     if (env.redis.enabled) tasks.push(this.publishRedis(message))
@@ -157,25 +168,35 @@ export class OutboxRelay {
 
   private async publishRedis(message: string): Promise<unknown> {
     const { default: Redis } = await import('ioredis')
-    const client = new Redis({ host: env.redis.host, port: env.redis.port, lazyConnect: false })
+    const client = new Redis({
+      host: env.redis.host,
+      port: env.redis.port,
+      lazyConnect: false,
+    })
     await client.publish(CHANNEL, message)
     await client.quit()
     return undefined
   }
 
-  private async persistMongo(event: OutboxEvent, message: string): Promise<unknown> {
+  private async persistMongo(
+    event: OutboxEvent,
+    message: string,
+  ): Promise<unknown> {
     const { MongoClient } = await import('mongodb')
     const client = new MongoClient(env.mongo.url)
     await client.connect()
     try {
-await client.db(env.mongo.db).collection('outbox_events').insertOne({
-        eventId: event.eventId,
-        eventType: event.eventType,
-        aggregateId: event.aggregateId,
-        payload: JSON.parse(event.payload),
-        raw: message,
-        receivedAt: new Date()
-      } as any)
+      await client
+        .db(env.mongo.db)
+        .collection('outbox_events')
+        .insertOne({
+          eventId: event.eventId,
+          eventType: event.eventType,
+          aggregateId: event.aggregateId,
+          payload: JSON.parse(event.payload),
+          raw: message,
+          receivedAt: new Date(),
+        } as any)
     } finally {
       await client.close()
     }

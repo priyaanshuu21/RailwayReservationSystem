@@ -14,9 +14,13 @@ interface DemoAccount {
 const DEMO_ACCOUNTS: DemoAccount[] = [
   { label: 'Passenger', email: 'passenger@railnexus.local', home: '/search' },
   { label: 'TTE (Conductor)', email: 'tte@railnexus.local', home: '/tte' },
-  { label: 'Station Master', email: 'station@railnexus.local', home: '/tte' },
-  { label: 'Zone Admin', email: 'zoneadmin@railnexus.local', home: '/reports' },
-  { label: 'Super Admin', email: 'admin@railnexus.local', home: '/reports' }
+  {
+    label: 'Station Master',
+    email: 'station@railnexus.local',
+    home: '/station',
+  },
+  { label: 'Zone Admin', email: 'zoneadmin@railnexus.local', home: '/zone' },
+  { label: 'Super Admin', email: 'admin@railnexus.local', home: '/admin' },
 ]
 
 export function LoginPage() {
@@ -27,7 +31,11 @@ export function LoginPage() {
   const [error, setError] = useState<string | null>(null)
   const [busy, setBusy] = useState(false)
 
-  async function signIn(userEmail: string, userPassword: string, redirectTo: string) {
+  async function signIn(
+    userEmail: string,
+    userPassword: string,
+    redirectTo: string,
+  ) {
     setBusy(true)
     setError(null)
     try {
@@ -42,7 +50,11 @@ export function LoginPage() {
 
   function onSubmit(e: FormEvent) {
     e.preventDefault()
-    void signIn(email, password, '/search')
+    void signIn(
+      email,
+      password,
+      DEMO_ACCOUNTS.find((a) => a.email === email)?.home ?? '/search',
+    )
   }
 
   return (
@@ -50,10 +62,20 @@ export function LoginPage() {
       <Card title="Sign in">
         <form className="flex flex-col gap-4" onSubmit={onSubmit}>
           <Field label="Email">
-            <Input type="email" value={email} onChange={(e) => setEmail(e.target.value)} required />
+            <Input
+              type="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              required
+            />
           </Field>
           <Field label="Password">
-            <Input type="password" value={password} onChange={(e) => setPassword(e.target.value)} required />
+            <Input
+              type="password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              required
+            />
           </Field>
           {error ? <Note kind="error">{error}</Note> : null}
           <Button type="submit" disabled={busy}>
@@ -68,8 +90,8 @@ export function LoginPage() {
       <Card title="Quick Demo Sign-In">
         <div className="flex flex-col gap-3">
           <Note>
-            One-click sign-in for the seeded demo roles (password <code>Demo@123</code>). You land straight in that
-            role's dashboard.
+            One-click sign-in for the seeded demo roles (password{' '}
+            <code>Demo@123</code>). You land straight in that role's dashboard.
           </Note>
           {DEMO_ACCOUNTS.map((account) => (
             <Button
@@ -77,7 +99,9 @@ export function LoginPage() {
               type="button"
               variant="ghost"
               disabled={busy}
-              onClick={() => void signIn(account.email, DEMO_PASSWORD, account.home)}
+              onClick={() =>
+                void signIn(account.email, DEMO_PASSWORD, account.home)
+              }
             >
               {busy ? 'Signing in…' : account.label}
             </Button>

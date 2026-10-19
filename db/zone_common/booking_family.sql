@@ -268,7 +268,7 @@ CREATE TABLE waitlist_queue (
   coach_class   VARCHAR2(3) NOT NULL,
   ticket_id     NUMBER(14) NOT NULL,
   position      NUMBER(6)  NOT NULL,
-  queue_type    CHAR(2)    NOT NULL CHECK (queue_type IN ('RAC','WL')),
+  queue_type    CHAR(3)    NOT NULL CHECK (queue_type IN ('RAC','WL')),
   enqueued_at   TIMESTAMP  DEFAULT SYSTIMESTAMP NOT NULL,
   CONSTRAINT pk_waitlist PRIMARY KEY (queue_id),
   CONSTRAINT uq_waitlist_pos UNIQUE (schedule_id, coach_class, position), -- FIFO per class

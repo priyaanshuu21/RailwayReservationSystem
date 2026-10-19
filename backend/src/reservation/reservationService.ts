@@ -1,5 +1,11 @@
 import { query } from '../db/oracle'
-import { ZONES, withZoneConnection, zoneForCode, zoneForZoneId, type ZoneDefinition } from '../db/zoneRouter'
+import {
+  ZONES,
+  withZoneConnection,
+  zoneForCode,
+  zoneForZoneId,
+  type ZoneDefinition,
+} from '../db/zoneRouter'
 
 // Reservation service (Phase 8): search + availability + booking + payment +
 // PNR + cancel against the zone that owns the schedule. All PL/SQL entry points
@@ -13,7 +19,7 @@ export class BadRequestError extends Error {
 }
 
 async function oracle() {
-  return import('oracledb')
+  return (await import('oracledb')).default
 }
 
 export function resolveZone(code: string): ZoneDefinition {
@@ -22,14 +28,36 @@ export function resolveZone(code: string): ZoneDefinition {
   return zone
 }
 
-async function zoneOfSchedule(scheduleId: number): Promise<ZoneDefinition> {
-  const rows = await query<{ ZONE_ID: number }>(
-    'SELECT zone_id FROM train_schedule WHERE schedule_id = :1',
-    [scheduleId]
+async function inventorySchedule(
+  scheduleId: number,
+): Promise<{ zone: ZoneDefinition; localId: number }> {
+  const rows = await query<{
+    ZONE_ID: number
+    TRAIN_ID: number
+    JOURNEY_DATE: string
+  }>(
+    "SELECT zone_id, train_id, TO_CHAR(journey_date,'YYYY-MM-DD') AS journey_date FROM train_schedule WHERE schedule_id = :1",
+    [scheduleId],
   )
-  const zone = rows[0] ? zoneForZoneId(rows[0].ZONE_ID) : undefined
-  if (!zone) throw new NotFoundError(`no zone owns schedule ${scheduleId}`)
-  return zone
+  const row = rows[0]
+  const zone = row ? zoneForZoneId(row.ZONE_ID) : undefined
+  if (!zone || !row) throw new NotFoundError(`No schedule ${scheduleId}`)
+  return withZoneConnection(zone, async (conn) => {
+    const db = await oracle()
+    const result = await conn.execute<{
+      rows?: Array<{ SCHEDULE_ID: number }>
+    }>(
+      "SELECT schedule_id FROM train_schedule WHERE train_id=:1 AND journey_date=TO_DATE(:2,'YYYY-MM-DD')",
+      [row.TRAIN_ID, row.JOURNEY_DATE],
+      { outFormat: db.OUT_FORMAT_OBJECT },
+    )
+    const localId = result.rows?.[0]?.SCHEDULE_ID
+    if (!localId)
+      throw new NotFoundError(
+        'Inventory has not been prepared for this journey',
+      )
+    return { zone, localId }
+  })
 }
 
 export interface SearchRow {
@@ -50,7 +78,7 @@ export interface SearchRow {
 export async function searchTrains(
   fromStationId: number,
   toStationId: number,
-  date: string
+  date: string,
 ): Promise<SearchRow[]> {
   return query<SearchRow>(
     `SELECT s.schedule_id, t.train_id, t.train_no, t.train_name, t.train_type,
@@ -68,9 +96,9 @@ export async function searchTrains(
         AND ts.station_id = :2
         AND fs.stop_order < ts.stop_order
         AND TRUNC(s.journey_date) = TO_DATE(:3, 'YYYY-MM-DD')
-        AND s.status = 'ACTIVE'
+        AND s.status = 'ACTIVE' AND t.train_type <> 'F'
       ORDER BY s.departure_time`,
-    [fromStationId, toStationId, date]
+    [fromStationId, toStationId, date],
   )
 }
 
@@ -83,28 +111,31 @@ export interface Availability {
   zone: string
 }
 
-export async function availability(scheduleId: number, coachClass: string): Promise<Availability> {
-  const zone = await zoneOfSchedule(scheduleId)
+export async function availability(
+  scheduleId: number,
+  coachClass: string,
+): Promise<Availability> {
+  const { zone, localId } = await inventorySchedule(scheduleId)
   return withZoneConnection(zone, async (conn) => {
     const db = await oracle()
     const res = await conn.execute<{ outBinds?: Array<number> }>(
       'BEGIN pkg_booking.availability(:sid, :cls, :free, :rac, :wl); END;',
       [
-        scheduleId,
+        localId,
         coachClass,
         { dir: db.BIND_OUT, type: db.NUMBER },
         { dir: db.BIND_OUT, type: db.NUMBER },
-        { dir: db.BIND_OUT, type: db.NUMBER }
-      ]
+        { dir: db.BIND_OUT, type: db.NUMBER },
+      ],
     )
     const out = res.outBinds ?? []
     return {
       scheduleId,
       coachClass,
-      freeSeats: Number(out[2]),
-      racRemaining: Number(out[3]),
-      wlRemaining: Number(out[4]),
-      zone: zone.code
+      freeSeats: Number(out[0]),
+      racRemaining: Number(out[1]),
+      wlRemaining: Number(out[2]),
+      zone: zone.code,
     }
   })
 }
@@ -116,7 +147,7 @@ export interface BookInput {
   toStop: number
   coachClass: string
   requestId: string
-  fare?: number
+  berthPreference?: string
 }
 
 export interface BookResult {
@@ -128,33 +159,36 @@ export interface BookResult {
 }
 
 export async function book(input: BookInput): Promise<BookResult> {
-  const zone = await zoneOfSchedule(input.scheduleId)
+  const { zone, localId } = await inventorySchedule(input.scheduleId)
   return withZoneConnection(zone, async (conn) => {
     const db = await oracle()
-    const res = await conn.execute<{ outBinds?: Array<number | string | null> }>(
+    const res = await conn.execute<{
+      outBinds?: Array<number | string | null>
+    }>(
       `BEGIN pkg_booking.book_ticket(:pid, :sid, :froms, :tos, :cls, :req, :fare,
-                                     :bid, :tid, :pnr, :st); END;`,
+                                     :bid, :tid, :pnr, :st, :berth); END;`,
       [
         input.passengerId,
-        input.scheduleId,
+        localId,
         input.fromStop,
         input.toStop,
         input.coachClass,
         input.requestId,
-        input.fare ?? null,
+        null,
         { dir: db.BIND_OUT, type: db.NUMBER },
         { dir: db.BIND_OUT, type: db.NUMBER },
         { dir: db.BIND_OUT, type: db.STRING, maxSize: 10 },
-        { dir: db.BIND_OUT, type: db.STRING, maxSize: 4 }
-      ]
+        { dir: db.BIND_OUT, type: db.STRING, maxSize: 4 },
+        input.berthPreference ?? null,
+      ],
     )
     const out = res.outBinds ?? []
     return {
-      bookingId: Number(out[7]),
-      ticketId: Number(out[8]),
-      pnr: String(out[9]),
-      status: String(out[10]),
-      zone: zone.code
+      bookingId: Number(out[0]),
+      ticketId: Number(out[1]),
+      pnr: String(out[2]),
+      status: String(out[3]),
+      zone: zone.code,
     }
   })
 }
@@ -197,11 +231,13 @@ export async function pay(input: PayInput): Promise<PayResult> {
         input.cardScheme ?? null,
         input.walletProvider ?? null,
         input.walletTxn ?? null,
-        { dir: db.BIND_OUT, type: db.NUMBER }
-      ]
+        { dir: db.BIND_OUT, type: db.NUMBER },
+      ],
     )
-    const paymentId = Number(rec.outBinds?.[10])
-    await conn.execute('BEGIN pkg_payment.capture_payment(:pid); END;', [paymentId])
+    const paymentId = Number(rec.outBinds?.[0])
+    await conn.execute('BEGIN pkg_payment.capture_payment(:pid); END;', [
+      paymentId,
+    ])
     return { paymentId, captured: true, zone: zone.code }
   })
 }
@@ -221,9 +257,18 @@ export interface BookingView {
   journeyDate: string
   trainId: number
   zoneCode: string
+  personId: number
+  seatNo: string | null
+  coachNo: string | null
+  berth: string | null
+  queuePosition: number | null
+  paidAmount: number
 }
 
-async function findInZone(zone: ZoneDefinition, pnr: string): Promise<BookingView | null> {
+async function findInZone(
+  zone: ZoneDefinition,
+  pnr: string,
+): Promise<BookingView | null> {
   return withZoneConnection(zone, async (conn) => {
     const db = await oracle()
     const res = await conn.execute<{ rows?: Record<string, unknown>[] }>(
@@ -231,34 +276,47 @@ async function findInZone(zone: ZoneDefinition, pnr: string): Promise<BookingVie
               b.fare_total, b.from_stop_order, b.to_stop_order,
               t.pnr, t.status AS ticket_status,
               TO_CHAR(s.journey_date, 'YYYY-MM-DD') AS journey_date, s.train_id,
-              p.full_name, p.email
+              p.full_name, p.email, b.person_id, se.seat_no, c.coach_no, ct.berth,
+              (SELECT COUNT(*) FROM waitlist_queue q2 WHERE q2.schedule_id = b.schedule_id
+                AND q2.coach_class = b.coach_class AND q2.queue_type=q.queue_type AND q2.position <= q.position) AS queue_position,
+              NVL((SELECT SUM(amount) FROM payment WHERE booking_id = b.booking_id AND status = 'CAP'),0) AS paid_amount
          FROM booking b
          JOIN ticket t ON t.booking_id = b.booking_id
          JOIN train_schedule s ON s.schedule_id = b.schedule_id
          JOIN person p ON p.person_id = b.person_id
+         LEFT JOIN confirmed_ticket ct ON ct.ticket_id = t.ticket_id
+         LEFT JOIN seat se ON se.seat_id = ct.seat_id
+         LEFT JOIN coach c ON c.coach_id = ct.coach_id
+         LEFT JOIN waitlist_queue q ON q.ticket_id = t.ticket_id
         WHERE t.pnr = :1`,
       [pnr],
-      { outFormat: db.OUT_FORMAT_OBJECT }
+      { outFormat: db.OUT_FORMAT_OBJECT },
     )
     const row = res.rows?.[0]
     if (!row) return null
     return {
-      bookingId: Number(row.booking_id),
-      bookingRef: String(row.booking_ref),
-      pnr: String(row.pnr),
-      passengerName: String(row.full_name),
-      email: String(row.email),
-      coachClass: String(row.coach_class),
-      bookingStatus: String(row.booking_status),
-      ticketStatus: String(row.ticket_status),
-      fareTotal: Number(row.fare_total),
-      fromStop: Number(row.from_stop_order),
-      toStop: Number(row.to_stop_order),
-      journeyDate: String(row.journey_date),
-      trainId: Number(row.train_id),
-      zoneCode: zone.code
+      bookingId: Number(row.BOOKING_ID),
+      bookingRef: String(row.BOOKING_REF),
+      pnr: String(row.PNR),
+      passengerName: String(row.FULL_NAME),
+      email: String(row.EMAIL),
+      coachClass: String(row.COACH_CLASS),
+      bookingStatus: String(row.BOOKING_STATUS),
+      ticketStatus: String(row.TICKET_STATUS),
+      fareTotal: Number(row.FARE_TOTAL),
+      fromStop: Number(row.FROM_STOP_ORDER),
+      toStop: Number(row.TO_STOP_ORDER),
+      journeyDate: String(row.JOURNEY_DATE),
+      trainId: Number(row.TRAIN_ID),
+      zoneCode: zone.code,
+      personId: Number(row.PERSON_ID),
+      seatNo: row.SEAT_NO ? String(row.SEAT_NO) : null,
+      coachNo: row.COACH_NO ? String(row.COACH_NO) : null,
+      berth: row.BERTH ? String(row.BERTH) : null,
+      queuePosition: row.QUEUE_POSITION ? Number(row.QUEUE_POSITION) : null,
+      paidAmount: Number(row.PAID_AMOUNT),
     }
-  }).catch(() => null)
+  })
 }
 
 export async function findBooking(pnr: string): Promise<BookingView> {
@@ -269,16 +327,21 @@ export async function findBooking(pnr: string): Promise<BookingView> {
   throw new NotFoundError(`no booking found for PNR ${pnr}`)
 }
 
-export async function cancel(pnr: string, zoneCode?: string): Promise<{ refundAmount: number; zone: string }> {
+export async function cancel(
+  pnr: string,
+  zoneCode?: string,
+): Promise<{ refundAmount: number; zone: string }> {
   const booking = await findBooking(pnr)
-  const zone = resolveZone(zoneCode ?? booking.zoneCode)
+  if (zoneCode && zoneCode !== booking.zoneCode)
+    throw new BadRequestError('Booking belongs to another zone')
+  const zone = resolveZone(booking.zoneCode)
   return withZoneConnection(zone, async (conn) => {
     const db = await oracle()
     const res = await conn.execute<{ outBinds?: Array<number | null> }>(
       'BEGIN pkg_booking.cancel_ticket(:bid, :refund); END;',
-      [booking.bookingId, { dir: db.BIND_OUT, type: db.NUMBER }]
+      [booking.bookingId, { dir: db.BIND_OUT, type: db.NUMBER }],
     )
-    return { refundAmount: Number(res.outBinds?.[1]), zone: zone.code }
+    return { refundAmount: Number(res.outBinds?.[0]), zone: zone.code }
   })
 }
 
@@ -292,8 +355,10 @@ export interface TteRow {
   BOARDING_STATUS: string | null
 }
 
-export async function listScheduleTickets(scheduleId: number): Promise<TteRow[]> {
-  const zone = await zoneOfSchedule(scheduleId)
+export async function listScheduleTickets(
+  scheduleId: number,
+): Promise<TteRow[]> {
+  const { zone, localId } = await inventorySchedule(scheduleId)
   return withZoneConnection(zone, async (conn) => {
     const db = await oracle()
     const res = await conn.execute<{ rows?: TteRow[] }>(
@@ -307,21 +372,42 @@ export async function listScheduleTickets(scheduleId: number): Promise<TteRow[]>
          LEFT JOIN seat se ON se.seat_id = ct.seat_id
         WHERE t.schedule_id = :1 AND t.status IN ('CFM', 'RAC')
         ORDER BY c.coach_no, se.seat_no`,
-      [scheduleId],
-      { outFormat: db.OUT_FORMAT_OBJECT }
+      [localId],
+      { outFormat: db.OUT_FORMAT_OBJECT },
     )
     return res.rows ?? []
   })
 }
 
-export async function boardTicket(pnr: string, zoneCode: string): Promise<string> {
+export async function boardTicket(
+  pnr: string,
+  zoneCode: string,
+): Promise<string> {
   const zone = resolveZone(zoneCode)
   return withZoneConnection(zone, async (conn) => {
     const db = await oracle()
     const res = await conn.execute<{ outBinds?: Array<string | null> }>(
       'BEGIN pkg_tte.board_ticket(:pnr, :msg); END;',
-      [pnr, { dir: db.BIND_OUT, type: db.STRING, maxSize: 200 }]
+      [pnr, { dir: db.BIND_OUT, type: db.STRING, maxSize: 200 }],
     )
-    return res.outBinds?.[1] ?? `boarding confirmed for ${pnr}`
+    return res.outBinds?.[0] ?? `boarding confirmed for ${pnr}`
+  })
+}
+
+export async function assertPaymentOwner(
+  zoneCode: string,
+  bookingId: number,
+  personId: number,
+): Promise<void> {
+  const zone = resolveZone(zoneCode)
+  await withZoneConnection(zone, async (conn) => {
+    const db = await oracle()
+    const r = await conn.execute<{ rows?: Array<{ PERSON_ID: number }> }>(
+      'SELECT person_id FROM booking WHERE booking_id=:1',
+      [bookingId],
+      { outFormat: db.OUT_FORMAT_OBJECT },
+    )
+    if (r.rows?.[0]?.PERSON_ID !== personId)
+      throw new BadRequestError('This booking belongs to another passenger')
   })
 }
