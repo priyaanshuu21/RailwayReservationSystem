@@ -80,9 +80,8 @@ for (const user of ['RAILNEXUS_NORTH', 'RAILNEXUS_WEST', 'RAILNEXUS_SOUTH'])
   run('iot/seed_sensors.sql', user)
 run('reporting/report_views.sql', 'RAILNEXUS')
 // Baseline announcement uses the same authorization procedure as the station UI.
-const { default: db } = await import(
-  path.join(root, 'backend/node_modules/oracledb/index.js')
-)
+// Resolve from backend on Windows as well as Linux; a C:\ path is not an ESM URL.
+const db = require('oracledb')
 const conn = await db.getConnection({
   user: process.env.ORACLE_USER ?? 'RAILNEXUS',
   password,
