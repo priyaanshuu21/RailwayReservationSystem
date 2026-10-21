@@ -46,6 +46,13 @@ and creates/acknowledges a sensor alert. It leaves audit/refund history for thos
 operations. Run it serially, before an audience starts making reservations.
 Override the API address with `DEMO_API_URL` when using another port.
 
+If the local Node backend reports `NJS-518` while container setup succeeds, run
+`docker compose port oracle 1521` to see Docker's published host port. Set
+`ORACLE_HOST=127.0.0.1`, `ORACLE_PORT=<that port>` and `ORACLE_SERVICE=FREEPDB1`
+in `backend/.env`, then restart the backend. A separately installed Windows Oracle
+listener may be answering on port 1521 instead of the Docker database; do not
+reset the Docker volumes to resolve a host connection mismatch.
+
 The seed adds at least 540 captured demo payments across all three zones, with
 30 days of synthetic revenue history. No money is transferred: payment capture
 is a database simulation, without a payment gateway.

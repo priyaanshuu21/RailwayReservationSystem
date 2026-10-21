@@ -79,24 +79,20 @@ for (const [user, zone] of [
 for (const user of ['RAILNEXUS_NORTH', 'RAILNEXUS_WEST', 'RAILNEXUS_SOUTH'])
   run('iot/seed_sensors.sql', user)
 run('reporting/report_views.sql', 'RAILNEXUS')
-// Baseline announcement uses the same authorization procedure as the station UI.
-// Resolve from backend on Windows as well as Linux; a C:\ path is not an ESM URL.
-const db = require('oracledb')
-const conn = await db.getConnection({
-  user: process.env.ORACLE_USER ?? 'RAILNEXUS',
-  password,
-  connectString: '127.0.0.1:1521/FREEPDB1',
-})
-try {
-  const existing = await conn.execute(
-    "SELECT COUNT(*) FROM station_announcement WHERE message LIKE 'October demo:%'",
-  )
-  if (existing.rows[0][0] === 0)
-    await conn.execute(
-      "BEGIN pkg_announcements.publish(103,'October demo: trains run daily from 1 to 30 October 2026. Please check your coach and berth before boarding.',2002,720,:id); END;",
-      { id: { dir: db.BIND_OUT, type: db.NUMBER } },
-    )
-} finally {
-  await conn.close()
-}
+// Keep all fixture writes on the same Docker connection. A separate host
+// listener (for example Windows Oracle XE) must not receive the final fixture.
+run('demo/announcement.sql', 'RAILNEXUS')
 console.log('October 2026 demonstration ready. Existing bookings preserved.')
+const portResult = spawnSync('docker', ['compose', 'port', 'oracle', '1521'], {
+  cwd: root,
+  encoding: 'utf8',
+  timeout: 10000,
+})
+const published = portResult.stdout?.trim().split(/\r?\n/).find(line => /:\d+$/.test(line))
+const hostPort = published?.match(/:(\d+)$/)?.[1]
+if (hostPort) {
+  console.log(`Docker Oracle is published on Windows/Linux host port ${hostPort}.`)
+  console.log(`For a locally started backend, backend/.env should use ORACLE_HOST=127.0.0.1, ORACLE_PORT=${hostPort}, ORACLE_SERVICE=FREEPDB1.`)
+} else {
+  console.log('Check the host Oracle port with: docker compose port oracle 1521')
+}
