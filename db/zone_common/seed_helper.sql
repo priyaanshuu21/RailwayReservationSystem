@@ -43,7 +43,7 @@ BEGIN
 
   BEGIN
     INSERT INTO schedule_class_policy (schedule_id, coach_class, rac_capacity, waitlist_limit)
-    VALUES (p_schedule_id, p_class, p_rac_quota, 50);
+    VALUES (p_schedule_id, p_class, p_rac_quota, 5);
   EXCEPTION WHEN DUP_VAL_ON_INDEX THEN NULL;
   END;
 END seed_schedule_coaches;

@@ -1,4 +1,3 @@
-import { DemonstrationPage } from './pages/DemonstrationPage'
 import { type ReactNode } from 'react'
 import { useAuth } from './auth/AuthContext'
 import { AnnouncementsPage } from './pages/AnnouncementsPage'
@@ -33,8 +32,7 @@ export default function App() {
       <AuthProvider>
         <Routes>
           <Route element={<Layout />}>
-            <Route path="/" element={<DemonstrationPage />} />
-            <Route path="/demonstrate" element={<DemonstrationPage />} />
+            <Route path="/" element={<SearchPage />} />
             <Route path="/login" element={<LoginPage />} />
             <Route path="/search" element={<SearchPage />} />
             <Route path="/book" element={<BookingPage />} />

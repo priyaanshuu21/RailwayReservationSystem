@@ -69,23 +69,24 @@ for (const user of [
 }
 run('plsql/pkg_announcements.sql', 'RAILNEXUS')
 run('demo/fare_rules.sql', 'RAILNEXUS')
+run('demo/retire_practice.sql', 'RAILNEXUS')
 for (const [user, zone] of [
   ['RAILNEXUS', 0],
   ['RAILNEXUS_NORTH', 1],
   ['RAILNEXUS_WEST', 2],
   ['RAILNEXUS_SOUTH', 3],
 ])
-  run('demo/october_2026.sql', user, zone)
-run('demo/practice_catalogue.sql', 'RAILNEXUS')
-run('demo/practice_labs.sql', 'RAILNEXUS', 0)
-run('demo/practice_labs.sql', 'RAILNEXUS_NORTH', 1)
+  {
+    run('demo/october_2026.sql', user, zone)
+    run('demo/limited_inventory.sql', user)
+  }
 for (const user of ['RAILNEXUS_NORTH', 'RAILNEXUS_WEST', 'RAILNEXUS_SOUTH'])
   run('iot/seed_sensors.sql', user)
 run('reporting/report_views.sql', 'RAILNEXUS')
 // Keep all fixture writes on the same Docker connection. A separate host
 // listener (for example Windows Oracle XE) must not receive the final fixture.
 run('demo/announcement.sql', 'RAILNEXUS')
-console.log('October 2026 demonstration ready. Existing bookings preserved.')
+console.log('October 2026 demonstration ready. Limited-seat inventory ready.')
 const portResult = spawnSync('docker', ['compose', 'port', 'oracle', '1521'], {
   cwd: root,
   encoding: 'utf8',

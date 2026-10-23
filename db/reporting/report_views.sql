@@ -70,17 +70,17 @@ CREATE OR REPLACE VIEW vw_occupancy_by_schedule AS
 SELECT 1 AS zone_id,c.schedule_id,c.coach_class,COUNT(*) AS seat_count,
  SUM(CASE WHEN s.status='R' THEN 1 ELSE 0 END) AS occupied_seats,
  ROUND(100*SUM(CASE WHEN s.status='R' THEN 1 ELSE 0 END)/COUNT(*),2) AS occupancy_pct
- FROM coach@ZONE_NORTH c JOIN seat@ZONE_NORTH s ON s.coach_id=c.coach_id GROUP BY c.schedule_id,c.coach_class
+ FROM coach@ZONE_NORTH c JOIN seat@ZONE_NORTH s ON s.coach_id=c.coach_id WHERE s.status<>'B' GROUP BY c.schedule_id,c.coach_class
 UNION ALL
 SELECT 2 AS zone_id,c.schedule_id,c.coach_class,COUNT(*) AS seat_count,
  SUM(CASE WHEN s.status='R' THEN 1 ELSE 0 END) AS occupied_seats,
  ROUND(100*SUM(CASE WHEN s.status='R' THEN 1 ELSE 0 END)/COUNT(*),2) AS occupancy_pct
- FROM coach@ZONE_WEST c JOIN seat@ZONE_WEST s ON s.coach_id=c.coach_id GROUP BY c.schedule_id,c.coach_class
+ FROM coach@ZONE_WEST c JOIN seat@ZONE_WEST s ON s.coach_id=c.coach_id WHERE s.status<>'B' GROUP BY c.schedule_id,c.coach_class
 UNION ALL
 SELECT 3 AS zone_id,c.schedule_id,c.coach_class,COUNT(*) AS seat_count,
  SUM(CASE WHEN s.status='R' THEN 1 ELSE 0 END) AS occupied_seats,
  ROUND(100*SUM(CASE WHEN s.status='R' THEN 1 ELSE 0 END)/COUNT(*),2) AS occupancy_pct
- FROM coach@ZONE_SOUTH c JOIN seat@ZONE_SOUTH s ON s.coach_id=c.coach_id GROUP BY c.schedule_id,c.coach_class;
+ FROM coach@ZONE_SOUTH c JOIN seat@ZONE_SOUTH s ON s.coach_id=c.coach_id WHERE s.status<>'B' GROUP BY c.schedule_id,c.coach_class;
 CREATE OR REPLACE VIEW vw_waitlist_pressure AS
 SELECT zone_code,schedule_id,coach_class,SUM(CASE WHEN queue_type='RAC' THEN 1 ELSE 0 END) AS rac_count,
  SUM(CASE WHEN queue_type='WL' THEN 1 ELSE 0 END) AS wl_count

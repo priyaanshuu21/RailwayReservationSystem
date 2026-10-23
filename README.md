@@ -71,9 +71,10 @@ The demo covers **1–30 October 2026**, with six passenger trains daily, real s
 bookings/payments, a waiting-list cancellation example, and distinct dashboards for
 all five actors. After the database stack starts, run `npm run demo:prepare`.
 **For a frontend-only presentation, start with [DEMO START HERE](docs/DEMO-START-HERE.md).**
-The new **Live demo** page has separate two-seat practice trains, a shared passenger
-board, visible WL/RAC promotion and a practice-only reset button. Quick login also
-includes Meera, the second passenger. Normal bookings are preserved.
+Regular trains have **2 confirmed seats per class, 1 RAC place and 5 waiting-list
+places**. Use Search and My bookings for the entire reservation flow. The first
+limited-seat migration cancels active October reservations once and retains their
+history and audit records; later setup runs preserve bookings.
 
 See [the presentation walkthrough](docs/demo-walkthrough.md) for exact role-by-role
 steps, sample journeys, procedures/triggers to explain, and SQL evidence. Run

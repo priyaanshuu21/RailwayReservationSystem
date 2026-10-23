@@ -182,13 +182,6 @@ export function BookingPage() {
           <p className="mt-4 text-sm text-muted">Loading availability…</p>
         )}
 
-        <div className="mt-3">
-          <Note>
-            RAC and waiting-list numbers above are remaining capacity, not
-            passengers already waiting. They are used only after confirmed seats
-            run out. For a 2-seat example, open Live demo.
-          </Note>
-        </div>
         <div className="mt-6">
           {!user?.roles.includes('passenger') ? (
             <Note>Sign in as a passenger to book.</Note>
@@ -248,9 +241,7 @@ export function BookingPage() {
               </p>
               {view.ticketStatus === 'WL' ? (
                 <Note>
-                  You are on the waiting list. Cancellation of a confirmed
-                  ticket promotes the next eligible passenger automatically.
-                  Payment does not guarantee a berth.
+                  Waiting for a berth. Payment does not guarantee confirmation.
                 </Note>
               ) : null}
             </div>
@@ -296,7 +287,7 @@ export function BookingPage() {
               ) : null}
               <div className="mt-4">
                 <Button disabled={busy} onClick={onPay}>
-                  {busy ? 'Processing…' : 'Pay demo fare'}
+                  {busy ? 'Processing…' : 'Pay fare'}
                 </Button>
               </div>
             </>

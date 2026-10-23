@@ -1,4 +1,3 @@
-import { Link } from 'react-router-dom'
 import { useEffect, useState, type FormEvent } from 'react'
 import { api, demoApi, type MyBooking, type BookingView } from '../lib/api'
 import { useAuth } from '../auth/AuthContext'
@@ -66,9 +65,6 @@ export function PnrPage() {
     <div className="flex flex-col gap-6">
       {user?.roles.includes('passenger') ? (
         <Card title="My bookings">
-          <Link to="/demonstrate">
-            <Button className="mb-4">Open repeatable waiting-list demo</Button>
-          </Link>
           <div className="mb-3">
             <Field label="Show bookings">
               <Select

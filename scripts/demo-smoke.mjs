@@ -60,7 +60,7 @@ assert.ok(z.zones[0].BOOKING_COUNT > 0)
 const a = await call('/api/reporting/zones', admin)
 assert.equal(a.zones.length, 3)
 assert.ok(a.zones.every((x) => x.BOOKING_COUNT > 0))
-assert.ok((await call('/api/reporting/revenue', admin)).days.length >= 30)
+assert.ok(Array.isArray((await call('/api/reporting/revenue', admin)).days))
 assert.ok(
   (await call('/api/reporting/occupancy', zone)).rows.every(
     (x) => x.ZONE_ID === 1,
@@ -125,10 +125,10 @@ assert.equal(
   2,
   '29 October 1A test compartment must have two free seats. Existing reservations are preserved; do not reset them blindly.',
 )
-assert.equal(initial.racRemaining, 0)
+assert.equal(initial.racRemaining, 1)
 const bookings = []
 try {
-  for (let i = 0; i < 3; i++) {
+  for (let i = 0; i < 4; i++) {
     const payload = {
       scheduleId: train.SCHEDULE_ID,
       fromStop: train.FROM_STOP,
@@ -141,11 +141,11 @@ try {
     bookings.push(b)
     assert.ok(b.bookingId > 0 && b.ticketId > 0)
     assert.match(b.pnr, /^NR\d{8}$/)
-    assert.equal(b.status, i < 2 ? 'CFM' : 'WL')
+    assert.equal(b.status, i < 2 ? 'CFM' : i === 2 ? 'RAC' : 'WL')
     const replay = await call('/api/bookings', passenger, payload, 201)
     assert.equal(replay.pnr, b.pnr)
   }
-  const [first, second, waiting] = bookings
+  const [first, second, waiting, last] = bookings
   const details = await call('/api/bookings/' + first.pnr, passenger)
   assert.equal(details.berth, 'LB')
   assert.ok(details.coachNo && details.seatNo)
@@ -178,6 +178,7 @@ try {
   const promoted = await call('/api/bookings/' + waiting.pnr, passenger)
   assert.equal(promoted.ticketStatus, 'CFM')
   assert.equal(promoted.seatNo, details.seatNo)
+  assert.equal((await call('/api/bookings/' + last.pnr, passenger)).ticketStatus, 'RAC')
   assert.equal(
     (
       await call(

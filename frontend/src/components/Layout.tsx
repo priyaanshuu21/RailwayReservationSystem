@@ -16,9 +16,6 @@ export function Layout() {
               RailNexus
             </NavLink>
             <nav className="flex flex-wrap items-center gap-1">
-              <NavLink to="/demonstrate" className={linkClass}>
-                Live demo
-              </NavLink>
               <NavLink to="/search" className={linkClass}>
                 Search
               </NavLink>

@@ -10,7 +10,6 @@
     "test": "node scripts/dev-test.mjs",
     "reset-demo": "node scripts/dev-reset-demo.mjs",
     "demo:prepare": "node scripts/prepare-demo.mjs",
-    "demo:verify": "node scripts/demo-smoke.mjs",
-    "demo:practice-test": "node scripts/practice-smoke.mjs"
+    "demo:verify": "node scripts/demo-smoke.mjs"
   }
 }

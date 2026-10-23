@@ -41,12 +41,12 @@ BEGIN
 
       IF rec.train_type IN ('E','S','P') THEN
         IF rec.train_type = 'P' THEN
-          seed_schedule_coaches(v_schedule_id, '2S', 6, 60, 8);
+          seed_schedule_coaches(v_schedule_id, '2S', 1, 2, 1);
         ELSE
-          seed_schedule_coaches(v_schedule_id, 'SL', 4, 72, 18);
-          seed_schedule_coaches(v_schedule_id, '3A', 3, 64, 16);
-          seed_schedule_coaches(v_schedule_id, '2A', 2, 46, 10);
-          seed_schedule_coaches(v_schedule_id, '1A', 1, 24, 6);
+          seed_schedule_coaches(v_schedule_id, 'SL', 1, 2, 1);
+          seed_schedule_coaches(v_schedule_id, '3A', 1, 2, 1);
+          seed_schedule_coaches(v_schedule_id, '2A', 1, 2, 1);
+          seed_schedule_coaches(v_schedule_id, '1A', 1, 2, 1);
         END IF;
       END IF;
     END LOOP;

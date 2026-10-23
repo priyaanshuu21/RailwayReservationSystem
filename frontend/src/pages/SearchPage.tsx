@@ -55,18 +55,7 @@ export function SearchPage() {
   return (
     <div className="flex flex-col gap-6">
       <Card title="Find a train">
-        <Link to="/demonstrate">
-          <Button className="mb-4">Start guided demo · only 2 seats</Button>
-        </Link>
-        <div className="mb-4">
-          <Note>
-            Demo dates: 1–30 October 2026, inclusive. Six passenger trains run
-            every day on their listed routes. Try Northvale Junction → Southbay
-            City (10001), Westport Central → Tamarind Hill (10002), or Southbay
-            City → Tamarind Hill (13002). For a repeatable waiting-list example,
-            use Live demo above. Normal services have larger capacity.
-          </Note>
-        </div>
+        <p className="mb-4 text-sm text-muted">Journey dates: 1–30 October 2026</p>
         <form
           onSubmit={onSearch}
           className="grid grid-cols-1 gap-4 sm:grid-cols-4"

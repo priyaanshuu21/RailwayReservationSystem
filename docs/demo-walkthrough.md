@@ -1,7 +1,6 @@
 # RailNexus demonstration: five actors and real database transactions
 
-**For a simple frontend presentation, use [Live demo instructions](DEMO-START-HERE.md).**
-The dedicated practice trains are repeatable; you no longer need the old fixed-date booking filter.
+**For setup and ordinary booking steps, see [start here](DEMO-START-HERE.md).**
 
 The demonstration runs **1 October 2026 through 30 October 2026, inclusive**.
 Six passenger services run every day (180 passenger journeys); freight is excluded
@@ -93,26 +92,15 @@ Explain `pkg_booking.book_ticket`, `pkg_fare.compute_fare`, `pkg_rules`, row loc
 foreign keys, ticket subtype tables, and payment specialization. The booking
 procedure commits the reservation as one transaction and rolls back on failure.
 
-### 2. Waiting list and cancellation (repeatable practice train)
+### 2. Waiting list and cancellation
 
-1. Passenger: open **Live demo**, leave the Waiting list scenario selected.
-2. Reset the practice train and confirm. Only this practice train is affected.
-3. Book three times: **Confirmed, Confirmed, Waiting list**.
-4. Cancel one of your confirmed rows. The banner names the promoted passenger;
-   the waiting ticket becomes Confirmed and receives the released seat.
-5. Select the RAC scenario to show four bookings: **Confirmed, Confirmed, RAC, WL**.
-   Cancellation promotes RAC to Confirmed and WL to RAC.
-6. Reset after presenting to restore two free seats for the next rehearsal.
-
-The board displays actual queue populations separately from remaining queue capacity.
-It shows active practice tickets; cancelled tickets remain in ordinary booking history.
-The existing PL/SQL booking, payment and cancellation procedures perform these actions.
-The underlying trigger still creates outbox audit events. Nothing is simulated in
-frontend state; only the payment gateway is a database-backed demo simulation.
+Use a regular train, date and class from Search. Each class has two confirmed
+seats and one RAC place. Book four tickets: CFM, CFM, RAC, WL. Cancel a confirmed
+ticket in My bookings and refresh to see RAC become CFM and WL become RAC.
 
 ### 3. TTE manifest and boarding
 
-1. Sign in as **TTE**. Select **28 October · 90001** (practice WL) or **90002** (practice RAC) in the journey dropdown before resetting the practice round.
+1. Sign in as **TTE**. Select the same regular train and journey date in the journey dropdown.
    The numeric schedule ID and owning zone are shown; no SQL ID guessing is needed.
 2. **Load passengers**. Show coach/seat/status and mark a confirmed passenger
    **Board**. Reload to demonstrate that the boarded status is stored.

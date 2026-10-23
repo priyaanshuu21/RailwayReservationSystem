@@ -15,12 +15,12 @@ const DEMO_ACCOUNTS: DemoAccount[] = [
   {
     label: 'Passenger',
     email: 'passenger@railnexus.local',
-    home: '/demonstrate',
+    home: '/search',
   },
   {
     label: 'Passenger · Meera Nair',
     email: 'meera.demo@railnexus.dev',
-    home: '/demonstrate',
+    home: '/search',
   },
   { label: 'TTE (Conductor)', email: 'tte@railnexus.local', home: '/tte' },
   {
