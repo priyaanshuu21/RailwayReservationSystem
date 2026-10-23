@@ -12,7 +12,16 @@ interface DemoAccount {
 }
 
 const DEMO_ACCOUNTS: DemoAccount[] = [
-  { label: 'Passenger', email: 'passenger@railnexus.local', home: '/search' },
+  {
+    label: 'Passenger',
+    email: 'passenger@railnexus.local',
+    home: '/demonstrate',
+  },
+  {
+    label: 'Passenger · Meera Nair',
+    email: 'meera.demo@railnexus.dev',
+    home: '/demonstrate',
+  },
   { label: 'TTE (Conductor)', email: 'tte@railnexus.local', home: '/tte' },
   {
     label: 'Station Master',

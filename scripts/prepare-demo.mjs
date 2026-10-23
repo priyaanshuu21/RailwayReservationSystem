@@ -76,6 +76,9 @@ for (const [user, zone] of [
   ['RAILNEXUS_SOUTH', 3],
 ])
   run('demo/october_2026.sql', user, zone)
+run('demo/practice_catalogue.sql', 'RAILNEXUS')
+run('demo/practice_labs.sql', 'RAILNEXUS', 0)
+run('demo/practice_labs.sql', 'RAILNEXUS_NORTH', 1)
 for (const user of ['RAILNEXUS_NORTH', 'RAILNEXUS_WEST', 'RAILNEXUS_SOUTH'])
   run('iot/seed_sensors.sql', user)
 run('reporting/report_views.sql', 'RAILNEXUS')
@@ -88,11 +91,20 @@ const portResult = spawnSync('docker', ['compose', 'port', 'oracle', '1521'], {
   encoding: 'utf8',
   timeout: 10000,
 })
-const published = portResult.stdout?.trim().split(/\r?\n/).find(line => /:\d+$/.test(line))
+const published = portResult.stdout
+  ?.trim()
+  .split(/\r?\n/)
+  .find((line) => /:\d+$/.test(line))
 const hostPort = published?.match(/:(\d+)$/)?.[1]
 if (hostPort) {
-  console.log(`Docker Oracle is published on Windows/Linux host port ${hostPort}.`)
-  console.log(`For a locally started backend, backend/.env should use ORACLE_HOST=127.0.0.1, ORACLE_PORT=${hostPort}, ORACLE_SERVICE=FREEPDB1.`)
+  console.log(
+    `Docker Oracle is published on Windows/Linux host port ${hostPort}.`,
+  )
+  console.log(
+    `For a locally started backend, backend/.env should use ORACLE_HOST=127.0.0.1, ORACLE_PORT=${hostPort}, ORACLE_SERVICE=FREEPDB1.`,
+  )
 } else {
-  console.log('Check the host Oracle port with: docker compose port oracle 1521')
+  console.log(
+    'Check the host Oracle port with: docker compose port oracle 1521',
+  )
 }

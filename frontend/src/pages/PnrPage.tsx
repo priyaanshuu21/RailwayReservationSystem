@@ -1,3 +1,4 @@
+import { Link } from 'react-router-dom'
 import { useEffect, useState, type FormEvent } from 'react'
 import { api, demoApi, type MyBooking, type BookingView } from '../lib/api'
 import { useAuth } from '../auth/AuthContext'
@@ -31,11 +32,7 @@ export function PnrPage() {
   const visibleHistory = history.filter(
     (b) =>
       historyFilter === 'all' ||
-      (historyFilter === 'cancelled'
-        ? b.STATUS === 'CNL'
-        : historyFilter === 'demo'
-          ? b.JOURNEY_DATE === '2026-10-20' && b.COACH_CLASS === '1A'
-          : b.STATUS !== 'CNL'),
+      (historyFilter === 'cancelled' ? b.STATUS === 'CNL' : b.STATUS !== 'CNL'),
   )
 
   async function onLookup(e: FormEvent) {
@@ -69,6 +66,9 @@ export function PnrPage() {
     <div className="flex flex-col gap-6">
       {user?.roles.includes('passenger') ? (
         <Card title="My bookings">
+          <Link to="/demonstrate">
+            <Button className="mb-4">Open repeatable waiting-list demo</Button>
+          </Link>
           <div className="mb-3">
             <Field label="Show bookings">
               <Select
@@ -76,7 +76,6 @@ export function PnrPage() {
                 onChange={(e) => setHistoryFilter(e.target.value)}
               >
                 <option value="active">Active bookings</option>
-                <option value="demo">20 October · 1A waiting-list demo</option>
                 <option value="all">All bookings</option>
                 <option value="cancelled">Cancelled bookings</option>
               </Select>
@@ -106,7 +105,17 @@ export function PnrPage() {
                 >
                   <span>
                     {b.TRAIN_NAME} · {b.JOURNEY_DATE} · {b.COACH_CLASS} ·{' '}
-                    <strong>{b.STATUS}</strong> · {b.PNR}
+                    <strong>
+                      {(
+                        {
+                          CFM: 'Confirmed',
+                          RAC: 'RAC',
+                          WL: 'Waiting list',
+                          CNL: 'Cancelled',
+                        } as Record<string, string>
+                      )[b.STATUS] ?? b.STATUS}
+                    </strong>{' '}
+                    · {b.PNR}
                   </span>
                   <Button
                     variant="ghost"
@@ -173,7 +182,16 @@ export function PnrPage() {
             <div className="flex items-center gap-2">
               <dt className="text-muted">Ticket</dt>
               <dd>
-                <Badge tone="info">{booking.ticketStatus}</Badge>
+                <Badge tone="info">
+                  {(
+                    {
+                      CFM: 'Confirmed (CFM)',
+                      RAC: 'RAC',
+                      WL: 'Waiting list (WL)',
+                      CNL: 'Cancelled (CNL)',
+                    } as Record<string, string>
+                  )[booking.ticketStatus] ?? booking.ticketStatus}
+                </Badge>
               </dd>
             </div>
             <div>

@@ -1,4 +1,5 @@
 import express from 'express'
+import {demoLabRouter} from './api/routes/demoLab'
 import { operationsRouter } from './api/routes/operations'
 import cors from 'cors'
 import helmet from 'helmet'
@@ -31,6 +32,7 @@ export function createApp() {
   app.use('/api/reporting', reportingRouter)
   app.use('/api', reservationsRouter)
   app.use('/api', operationsRouter)
+  app.use('/api/practice',demoLabRouter)
 
   app.get('/api', (_req, res) => {
     res.json({ service: 'railnexus-api', version: '0.1.0', docs: '/api-docs' })

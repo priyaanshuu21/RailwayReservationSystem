@@ -1,5 +1,8 @@
 # RailNexus demonstration: five actors and real database transactions
 
+**For a simple frontend presentation, use [Live demo instructions](DEMO-START-HERE.md).**
+The dedicated practice trains are repeatable; you no longer need the old fixed-date booking filter.
+
 The demonstration runs **1 October 2026 through 30 October 2026, inclusive**.
 Six passenger services run every day (180 passenger journeys); freight is excluded
 from passenger search. Trains serve their listed stops, so an arbitrary reverse or
@@ -90,30 +93,26 @@ Explain `pkg_booking.book_ticket`, `pkg_fare.compute_fare`, `pkg_rules`, row loc
 foreign keys, ticket subtype tables, and payment specialization. The booking
 procedure commits the reservation as one transaction and rolls back on failure.
 
-### 2. Waiting list and cancellation (the small compartment)
+### 2. Waiting list and cancellation (repeatable practice train)
 
-1. Passenger: open **My bookings / PNR** and set **Show bookings** to
-   **20 October · 1A waiting-list demo**. This isolates train 10001’s presentation tickets.
-2. The fixture starts with **two confirmed seats and one WL ticket**. One confirmed
-   ticket and the waiting ticket belong to the quick-login passenger; the other
-   confirmed ticket belongs to Meera. No RAC quota is used in this small example,
-   making the direct WL → CFM change easy to see.
-3. Look up the WL ticket: status **WL**, queue position **1**, seat pending.
-4. Select the passenger's **CFM** ticket for that date/class and **Cancel booking**.
-5. Show the actual paid-fare refund request. Select the former WL ticket again:
-   it is now **CFM**, with the released seat and berth assigned automatically.
-6. Refresh availability: the promoted passenger occupies the released seat; it
-   must not simultaneously appear as a free seat.
+1. Passenger: open **Live demo**, leave the Waiting list scenario selected.
+2. Reset the practice train and confirm. Only this practice train is affected.
+3. Book three times: **Confirmed, Confirmed, Waiting list**.
+4. Cancel one of your confirmed rows. The banner names the promoted passenger;
+   the waiting ticket becomes Confirmed and receives the released seat.
+5. Select the RAC scenario to show four bookings: **Confirmed, Confirmed, RAC, WL**.
+   Cancellation promotes RAC to Confirmed and WL to RAC.
+6. Reset after presenting to restore two free seats for the next rehearsal.
 
-Explain `pkg_booking.cancel_ticket`: it locks the same schedule as booking,
-updates the cancelled ticket, creates a refund request only for a captured
-payment, and promotes the FIFO queue in the same transaction. In regular classes
-RAC has priority; a vacated RAC slot promotes the next WL passenger to RAC.
-Refunds here are recorded requests, not real bank transfers.
+The board displays actual queue populations separately from remaining queue capacity.
+It shows active practice tickets; cancelled tickets remain in ordinary booking history.
+The existing PL/SQL booking, payment and cancellation procedures perform these actions.
+The underlying trigger still creates outbox audit events. Nothing is simulated in
+frontend state; only the payment gateway is a database-backed demo simulation.
 
 ### 3. TTE manifest and boarding
 
-1. Sign in as **TTE**. Select **20 October · 10001** in the journey dropdown.
+1. Sign in as **TTE**. Select **28 October · 90001** (practice WL) or **90002** (practice RAC) in the journey dropdown before resetting the practice round.
    The numeric schedule ID and owning zone are shown; no SQL ID guessing is needed.
 2. **Load passengers**. Show coach/seat/status and mark a confirmed passenger
    **Board**. Reload to demonstrate that the boarded status is stored.

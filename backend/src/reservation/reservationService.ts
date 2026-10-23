@@ -96,7 +96,7 @@ export async function searchTrains(
         AND ts.station_id = :2
         AND fs.stop_order < ts.stop_order
         AND TRUNC(s.journey_date) = TO_DATE(:3, 'YYYY-MM-DD')
-        AND s.status = 'ACTIVE' AND t.train_type <> 'F'
+        AND s.status = 'ACTIVE' AND t.train_type <> 'F' AND t.train_id NOT IN (9001,9002)
       ORDER BY s.departure_time`,
     [fromStationId, toStationId, date],
   )

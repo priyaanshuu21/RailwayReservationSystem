@@ -321,3 +321,49 @@ export const demoApi = {
     }>('/api/admin/audit'),
   refresh: () => post<{ refreshed: string }>('/api/reporting/refresh'),
 }
+
+export interface PracticeTicket {
+  BOOKING_ID: number
+  PASSENGER: string
+  PNR: string
+  STATUS: string
+  COACH_NO: string | null
+  SEAT_NO: string | null
+  BERTH: string | null
+  PAID_AMOUNT: number
+  FARE_TOTAL: number
+  PERSON_ID: number
+}
+export interface PracticeState {
+  scheduleId: number
+  coachClass: string
+  date: string
+  capacity: number
+  freeSeats: number
+  racRemaining: number
+  wlRemaining: number
+  confirmed: number
+  racWaiting: number
+  waitlisted: number
+  tickets: PracticeTicket[]
+}
+export const practiceApi = {
+  state: (lab: string) => request<PracticeState>(`/api/practice/${lab}`),
+  book: (lab: string) =>
+    post<{ result: { pnr: string; status: string }; state: PracticeState }>(
+      `/api/practice/${lab}/book`,
+      {},
+    ),
+  cancel: (lab: string, pnr: string) =>
+    post<{
+      cancelledPnr: string
+      refundAmount: number
+      promoted: PracticeTicket[]
+      state: PracticeState
+    }>(`/api/practice/${lab}/cancel`, { pnr }),
+  reset: (lab: string) =>
+    post<{ state: PracticeState; message: string }>(
+      `/api/practice/${lab}/reset`,
+      {},
+    ),
+}

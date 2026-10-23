@@ -11,7 +11,7 @@ BEGIN
   FOR t IN (SELECT t.train_id,t.train_type,tr.route_id,st.zone_id FROM train t
     JOIN train_route tr ON tr.train_id=t.train_id AND tr.is_active=1
     JOIN route r ON r.route_id=tr.route_id JOIN station st ON st.station_id=r.origin_station
-    WHERE t.active=1 AND t.train_type<>'F' AND (&DEMO_ZONE_ID=0 OR st.zone_id=&DEMO_ZONE_ID)) LOOP
+    WHERE t.active=1 AND t.train_type<>'F' AND t.train_id NOT IN (9001,9002) AND (&DEMO_ZONE_ID=0 OR st.zone_id=&DEMO_ZONE_ID)) LOOP
     FOR d IN 0..29 LOOP
       BEGIN
         SELECT schedule_id INTO v_sid FROM train_schedule WHERE train_id=t.train_id AND journey_date=DATE '2026-10-01'+d;

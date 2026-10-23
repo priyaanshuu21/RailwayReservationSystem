@@ -168,16 +168,27 @@ export function BookingPage() {
         {availability ? (
           <div className="mt-4 flex flex-wrap gap-2">
             <Badge tone={availability.freeSeats > 0 ? 'ok' : 'warn'}>
-              {availability.freeSeats} free
+              {availability.freeSeats} confirmed seats available
             </Badge>
-            <Badge tone="info">RAC {availability.racRemaining}</Badge>
-            <Badge tone="info">WL {availability.wlRemaining}</Badge>
+            <Badge tone="info">
+              RAC capacity remaining: {availability.racRemaining}
+            </Badge>
+            <Badge tone="info">
+              Waiting-list capacity remaining: {availability.wlRemaining}
+            </Badge>
             <Badge tone="info">zone {availability.zone}</Badge>
           </div>
         ) : (
           <p className="mt-4 text-sm text-muted">Loading availability…</p>
         )}
 
+        <div className="mt-3">
+          <Note>
+            RAC and waiting-list numbers above are remaining capacity, not
+            passengers already waiting. They are used only after confirmed seats
+            run out. For a 2-seat example, open Live demo.
+          </Note>
+        </div>
         <div className="mt-6">
           {!user?.roles.includes('passenger') ? (
             <Note>Sign in as a passenger to book.</Note>
@@ -212,7 +223,15 @@ export function BookingPage() {
         <Card title="Reservation details and payment">
           <div className="mb-4 flex items-center gap-2">
             <Badge tone="ok">PNR {booking.pnr}</Badge>
-            <Badge tone="info">{booking.status}</Badge>
+            <Badge tone="info">
+              {(
+                {
+                  CFM: 'Confirmed (CFM)',
+                  RAC: 'RAC',
+                  WL: 'Waiting list (WL)',
+                } as Record<string, string>
+              )[booking.status] ?? booking.status}
+            </Badge>
           </div>
           {view ? (
             <div className="mb-3 text-sm">
